@@ -1,12 +1,6 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 .navbar {
-  background-color: pink;
-  color: purple;
+  background: #eab0c1;
+  color: #2d1b24;
 
   padding: 18px 40px;
 
@@ -15,17 +9,22 @@
   align-items: center;
 }
 
-.nav-links {
-  display: flex;
-  gap: 25px;
-}
-
 .nav-links a {
+  color: #7a0d6b;
   text-decoration: none;
-  color: purple;
-  font-size: 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  transition: 0.3s;
 }
 
 .nav-links a:hover {
-  color: #38bdf8;
+  color: #d98aa2;
+}
+
+.nav-links {
+  display: flex;
+  gap: 25px;
 }

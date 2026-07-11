@@ -54,3 +54,72 @@
 .card h2 {
   margin-bottom: 12px;
 }
+
+.hero {
+  min-height: 70vh;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  background: linear-gradient(135deg, #f8d7e1, #ffffff);
+
+  border-radius: 20px;
+}
+
+.hero-content {
+  max-width: 800px;
+}
+
+.hero h1 {
+  font-size: 72px;
+  color: #7a0d6b;
+}
+
+.hero p {
+  font-size: 24px;
+  line-height: 1.6;
+}
+
+.hero button {
+  margin-top: 30px;
+
+  padding: 14px 28px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: #eab0c1;
+  color: #2d1b24;
+
+  cursor: pointer;
+}
+
+.stats {
+  margin: 60px 0;
+
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+
+  gap: 20px;
+}
+
+.stat-card {
+  background: white;
+
+  padding: 30px;
+
+  text-align: center;
+
+  border-radius: 15px;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card h2 {
+  color: #7a0d6b;
+  font-size: 40px;
+}

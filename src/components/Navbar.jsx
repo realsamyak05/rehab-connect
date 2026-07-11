@@ -1,4 +1,13 @@
 import { Link } from "react-router-dom";
+
+import {
+  FaHome,
+  FaHospital,
+  FaDumbbell,
+  FaChartLine,
+  FaStore,
+  FaRobot,
+} from "react-icons/fa";
 import "./Navbar.css";
 
 function Navbar() {
@@ -7,12 +16,29 @@ function Navbar() {
       <h2>RehabConnect</h2>
 
       <div className="nav-links">
-        <Link to="/">Home</Link>
-        <Link to="/centres">Centres</Link>
-        <Link to="/exercises">Exercises</Link>
-        <Link to="/tracker">Tracker</Link>
-        <Link to="/marketplace">Marketplace</Link>
-        <Link to="/assistant">AI Assistant</Link>
+        <Link to="/">
+          <FaHome /> Home
+        </Link>
+
+        <Link to="/centres">
+          <FaHospital /> Centres
+        </Link>
+
+        <Link to="/exercises">
+          <FaDumbbell /> Exercises
+        </Link>
+
+        <Link to="/tracker">
+          <FaChartLine /> Tracker
+        </Link>
+
+        <Link to="/marketplace">
+          <FaStore /> Marketplace
+        </Link>
+
+        <Link to="/assistant">
+          <FaRobot /> AI Assistant
+        </Link>
       </div>
     </nav>
   );

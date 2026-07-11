@@ -7,6 +7,7 @@ import Tracker from "./pages/Tracker";
 import Marketplace from "./pages/Marketplace";
 import Assistant from "./pages/Assistant";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/assistant" element={<Assistant />} />
       </Routes>
+      <Footer />
     </BrowserRouter>
   );
 }

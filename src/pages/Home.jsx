@@ -4,14 +4,33 @@ function Home() {
   return (
     <div className="home">
       <section className="hero">
-        <h1>RehabConnect</h1>
+        <div className="hero-content">
+          <h1>RehabConnect</h1>
 
-        <p>
-          Helping people find rehabilitation centres, access exercise programs,
-          track recovery, and discover affordable assistive devices.
-        </p>
+          <p>
+            Helping people find rehabilitation centres, access exercise
+            programs, track recovery, and discover affordable assistive devices.
+          </p>
 
-        <button>Get Started</button>
+          <button>Get Started</button>
+        </div>
+      </section>
+
+      <section className="stats">
+        <div className="stat-card">
+          <h2>100+</h2>
+          <p>Rehabilitation Centres</p>
+        </div>
+
+        <div className="stat-card">
+          <h2>50+</h2>
+          <p>Exercise Programs</p>
+        </div>
+
+        <div className="stat-card">
+          <h2>1000+</h2>
+          <p>People Helped</p>
+        </div>
       </section>
 
       <section className="features">

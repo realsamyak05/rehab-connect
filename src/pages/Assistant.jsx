@@ -1,34 +1,25 @@
 import { useState } from "react";
+import { askGroq } from "../groq";
 
 function Assistant() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
 
-  function handleAsk() {
-    const q = question.toLowerCase();
-
-    if (q.includes("knee")) {
-      setAnswer(
-        "Recommended exercises: knee raises, leg stretches, and walking.",
-      );
-    } else if (q.includes("lucknow")) {
-      setAnswer(
-        "Rehabilitation centres available in Lucknow: Sunrise Rehabilitation Centre and Healing Touch.",
-      );
-    } else if (q.includes("wheelchair")) {
-      setAnswer(
-        "Affordable wheelchairs are available in the marketplace section.",
-      );
-    } else if (q.includes("back")) {
-      setAnswer("Try back stretches and light mobility exercises.");
-    } else {
-      setAnswer("Sorry, I don't know the answer yet.");
+  async function handleAsk() {
+    if (question.trim() === "") {
+      return;
     }
+
+    setAnswer("Thinking...");
+
+    const response = await askGroq(question);
+
+    setAnswer(response);
   }
 
   return (
     <div style={{ padding: "40px" }}>
-      <h1>AI Assistant</h1>
+      <h1>RehabConnect AI Assistant 🤖</h1>
 
       <input
         type="text"
@@ -62,7 +53,14 @@ function Assistant() {
           }}
         >
           <h3>Answer:</h3>
-          <p>{answer}</p>
+          <p
+            style={{
+              whiteSpace: "pre-line",
+              lineHeight: "1.7",
+            }}
+          >
+            {answer}
+          </p>
         </div>
       )}
     </div>

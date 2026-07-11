@@ -1,0 +1,73 @@
+.tracker-page {
+  padding: 40px;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.tracker-title {
+  margin-bottom: 10px;
+}
+
+.progress-container {
+  width: 500px;
+  height: 22px;
+  background: #d1d5db;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #22c55e;
+  transition: width 0.3s;
+}
+
+.input-section {
+  margin-top: 25px;
+  display: flex;
+  gap: 10px;
+}
+
+.input-section input {
+  width: 320px;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+}
+
+.input-section button {
+  padding: 12px 18px;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.task-card {
+  margin-top: 20px;
+  padding: 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.delete-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+}
