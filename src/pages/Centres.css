@@ -68,3 +68,19 @@
     margin: 10px 0 0;
   }
 }
+
+.save-centre-button {
+  display: block;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border: 1px solid #7a0d6b;
+  border-radius: 8px;
+  background: white;
+  color: #7a0d6b;
+  font: inherit;
+  cursor: pointer;
+}
+
+.save-centre-button:hover {
+  background: #f8d7e1;
+}

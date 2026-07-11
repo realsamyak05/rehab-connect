@@ -3,6 +3,18 @@ import "leaflet/dist/leaflet.css";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 
+import { useNavigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
+import { auth, db } from "../firebase";
+
 const DEFAULT_POSITION = [26.8467, 80.9462];
 const SEARCH_RADIUS_METRES = 10_000;
 
@@ -15,6 +27,65 @@ function RecenterMap({ position }) {
 }
 
 function Centres() {
+  const [user, setUser] = useState(null);
+  const [savedCentreIds, setSavedCentreIds] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let stopSavedCentres = () => {};
+
+    const stopAuth = onAuthStateChanged(auth, (currentUser) => {
+      stopSavedCentres();
+      setUser(currentUser);
+
+      if (!currentUser) {
+        setSavedCentreIds([]);
+        return;
+      }
+
+      stopSavedCentres = onSnapshot(
+        collection(db, "users", currentUser.uid, "savedCentres"),
+        (snapshot) => {
+          setSavedCentreIds(snapshot.docs.map((item) => item.id));
+        },
+      );
+    });
+
+    return () => {
+      stopAuth();
+      stopSavedCentres();
+    };
+  }, []);
+
+  async function toggleSavedCentre(centre) {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    const savedCentreRef = doc(
+      db,
+      "users",
+      user.uid,
+      "savedCentres",
+      String(centre.id),
+    );
+
+    if (savedCentreIds.includes(String(centre.id))) {
+      await deleteDoc(savedCentreRef);
+      return;
+    }
+
+    await setDoc(savedCentreRef, {
+      name: centre.name,
+      city: centre.city ?? "Unknown city",
+      type: centre.type ?? "Healthcare",
+      address: centre.address ?? "Address unavailable",
+      lat: centre.lat ?? null,
+      lng: centre.lng ?? null,
+      savedAt: serverTimestamp(),
+    });
+  }
   const [search, setSearch] = useState("");
   const [centres, setCentres] = useState([]);
   const [mapPosition, setMapPosition] = useState(DEFAULT_POSITION);
@@ -206,6 +277,15 @@ function Centres() {
             >
               View on Maps
             </a>
+
+            <button
+              className="save-centre-button"
+              onClick={() => toggleSavedCentre(centre)}
+            >
+              {savedCentreIds.includes(String(centre.id))
+                ? "♥ Saved"
+                : "♡ Save centre"}
+            </button>
           </article>
         ))}
       </div>

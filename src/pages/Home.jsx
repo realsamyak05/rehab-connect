@@ -1,6 +1,21 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase";
 import "./Home.css";
 
 function Home() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+
+    return unsubscribe;
+  }, []);
+
   return (
     <div className="home">
       <section className="hero">
@@ -12,7 +27,9 @@ function Home() {
             programs, track recovery, and discover affordable assistive devices.
           </p>
 
-          <button>Get Started</button>
+          <button onClick={() => navigate(user ? "/centres" : "/login")}>
+            {user ? "Explore Centres" : "Get Started"}
+          </button>
         </div>
       </section>
 
