@@ -1,0 +1,31 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.navbar {
+  background-color: pink;
+  color: purple;
+
+  padding: 18px 40px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-links {
+  display: flex;
+  gap: 25px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: purple;
+  font-size: 18px;
+}
+
+.nav-links a:hover {
+  color: #38bdf8;
+}

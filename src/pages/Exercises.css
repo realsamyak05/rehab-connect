@@ -1,0 +1,41 @@
+.exercises-page {
+  padding: 40px;
+}
+
+.exercise-grid {
+  margin-top: 30px;
+
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+
+  gap: 20px;
+}
+
+.exercise-card {
+  padding: 20px;
+
+  border-radius: 12px;
+
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+.exercise-card h2 {
+  margin-bottom: 10px;
+}
+
+.exercise-card a {
+  display: inline-block;
+
+  margin-top: 15px;
+
+  text-decoration: none;
+
+  color: white;
+
+  background: #2563eb;
+
+  padding: 10px 16px;
+
+  border-radius: 8px;
+}
