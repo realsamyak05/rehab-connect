@@ -11,7 +11,7 @@ import Assistant from "./pages/Assistant";
 import Login from "./pages/Login";
 import SavedCentres from "./pages/SavedCentres";
 import Dashboard from "./pages/Dashboard";
-
+import Profile from "./pages/Profile";
 function App() {
   return (
     <BrowserRouter>
@@ -26,6 +26,7 @@ function App() {
         <Route path="/marketplace" element={<Marketplace />} />
         <Route path="/assistant" element={<Assistant />} />
         <Route path="/saved-centres" element={<SavedCentres />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/login" element={<Login />} />
       </Routes>
 

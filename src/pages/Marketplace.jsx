@@ -15,7 +15,14 @@ function Marketplace() {
 
             <p>₹{product.price}</p>
 
-            <button>View Product</button>
+            <a
+              className="view-product-button"
+              href={product.link}
+              target="_blank"
+              rel="noreferrer"
+            >
+              View Product
+            </a>
           </div>
         ))}
       </div>

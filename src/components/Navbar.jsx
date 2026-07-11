@@ -66,9 +66,9 @@ function Navbar() {
 
         {user ? (
           <>
-            <span className="user-name">
+            <Link className="user-name" to="/profile">
               <FaUserCircle /> {user.displayName || user.email}
-            </span>
+            </Link>
 
             <button className="logout-button" onClick={handleLogout}>
               <FaSignOutAlt /> Logout
