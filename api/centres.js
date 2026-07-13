@@ -33,11 +33,13 @@ export default async function handler(req, res) {
 
   try {
     const overpassResponse = await fetch(
-      "https://overpass-api.de/api/interpreter",
+      "https://overpass.kumi.systems/api/interpreter",
       {
         method: "POST",
         headers: {
+          Accept: "application/json",
           "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+          "User-Agent": "RehabConnect Centre Finder",
         },
         body: `data=${encodeURIComponent(query)}`,
       },
