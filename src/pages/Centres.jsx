@@ -100,20 +100,13 @@ function Centres() {
     setMapPosition([lat, lng]);
     setSearchedPlace(label);
 
-    const query = `
-      [out:json][timeout:25];
-      (
-        nwr["amenity"="hospital"](around:${SEARCH_RADIUS_METRES},${lat},${lng});
-        nwr["healthcare"~"rehabilitation|clinic|hospital|centre",i](around:${SEARCH_RADIUS_METRES},${lat},${lng});
-      );
-      out center 20;
-    `;
+    
 
     try {
-      const response = await fetch("https://overpass-api.de/api/interpreter", {
+      const response = await fetch("/api/centres", {
         method: "POST",
-        headers: { "Content-Type": "text/plain;charset=UTF-8" },
-        body: query,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lat, lng }),
       });
       if (!response.ok) throw new Error("Could not load centres");
 
