@@ -1,69 +1,44 @@
 import { useState } from "react";
 import { askGroq } from "../groq";
+import "./Assistant.css";
 
 function Assistant() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
 
-  async function handleAsk() {
-    if (question.trim() === "") {
-      return;
-    }
+  async function handleAsk(event) {
+    event.preventDefault();
+
+    if (!question.trim()) return;
 
     setAnswer("Thinking...");
-
-    const response = await askGroq(question);
-
-    setAnswer(response);
+    setAnswer(await askGroq(question));
   }
 
   return (
-    <div style={{ padding: "40px" }}>
+    <main className="assistant-page">
       <h1>RehabConnect AI Assistant 🤖</h1>
 
-      <input
-        type="text"
-        placeholder="Ask a question..."
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-        style={{
-          width: "400px",
-          padding: "10px",
-          marginTop: "20px",
-        }}
-      />
-
-      <button
-        onClick={handleAsk}
-        style={{
-          marginLeft: "10px",
-          padding: "10px 20px",
-        }}
-      >
-        Ask
-      </button>
+      <form className="assistant-form" onSubmit={handleAsk}>
+        <input
+          className="assistant-input"
+          type="text"
+          placeholder="Ask a question..."
+          value={question}
+          onChange={(event) => setQuestion(event.target.value)}
+        />
+        <button className="assistant-button" type="submit">
+          Ask
+        </button>
+      </form>
 
       {answer && (
-        <div
-          style={{
-            marginTop: "30px",
-            padding: "20px",
-            border: "1px solid #ccc",
-            borderRadius: "10px",
-          }}
-        >
+        <section className="assistant-answer" aria-live="polite">
           <h3>Answer:</h3>
-          <p
-            style={{
-              whiteSpace: "pre-line",
-              lineHeight: "1.7",
-            }}
-          >
-            {answer}
-          </p>
-        </div>
+          <p>{answer}</p>
+        </section>
       )}
-    </div>
+    </main>
   );
 }
 

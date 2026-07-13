@@ -1,0 +1,68 @@
+.assistant-page {
+    min-height: 70vh;
+    padding: 40px;
+  }
+  
+  .assistant-form {
+    display: flex;
+    gap: 10px;
+    max-width: 700px;
+    margin-top: 20px;
+  }
+  
+  .assistant-input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font: inherit;
+  }
+  
+  .assistant-button {
+    padding: 12px 20px;
+    border: 0;
+    border-radius: 8px;
+    background: #7a0d6b;
+    color: white;
+    font: inherit;
+    cursor: pointer;
+  }
+  
+  .assistant-answer {
+    max-width: 850px;
+    margin-top: 30px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background: white;
+  }
+  
+  .assistant-answer p {
+    white-space: pre-line;
+    line-height: 1.7;
+  }
+  
+  @media (max-width: 700px) {
+    .assistant-page {
+      padding: 24px 16px;
+    }
+  
+    .assistant-page h1 {
+      font-size: 28px;
+    }
+  
+    .assistant-form {
+      flex-direction: column;
+    }
+  
+    .assistant-button {
+      width: 100%;
+    }
+  
+    .assistant-answer {
+      padding: 16px;
+    }
+  }
+
+  
