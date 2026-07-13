@@ -1,4 +1,4 @@
-const SEARCH_RADIUS_METRES = 10_000;
+const SEARCH_RADIUS_METRES = 5_000;
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -23,17 +23,17 @@ export default async function handler(req, res) {
   }
 
   const query = `
-    [out:json][timeout:25];
-    (
-      nwr["amenity"="hospital"](around:${SEARCH_RADIUS_METRES},${lat},${lng});
-      nwr["healthcare"~"rehabilitation|clinic|hospital|centre",i](around:${SEARCH_RADIUS_METRES},${lat},${lng});
-    );
-    out center 20;
-  `;
-
+  [out:json][timeout:12];
+  (
+    nwr["healthcare"="rehabilitation"](around:${SEARCH_RADIUS_METRES},${lat},${lng});
+    nwr["amenity"="clinic"](around:${SEARCH_RADIUS_METRES},${lat},${lng});
+    nwr["amenity"="hospital"](around:${SEARCH_RADIUS_METRES},${lat},${lng});
+  );
+  out center 25;
+`;
   try {
     const overpassResponse = await fetch(
-      "https://overpass.kumi.systems/api/interpreter",
+      "https://overpass.private.coffee/api/interpreter",
       {
         method: "POST",
         headers: {
