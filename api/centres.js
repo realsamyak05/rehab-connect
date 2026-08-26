@@ -1,9 +1,38 @@
 const SEARCH_RADIUS_METRES = 5_000;
 const CACHE_TTL_MS = 5 * 60 * 1_000;
 const centreCache = new Map();
+const OVERPASS_ENDPOINTS = [
+  "https://overpass-api.de/api/interpreter",
+  "https://overpass.private.coffee/api/interpreter",
+  "https://overpass.kumi.systems/api/interpreter",
+];
 
 function cacheKey(lat, lng) {
   return `${lat.toFixed(2)},${lng.toFixed(2)}`;
+}
+
+async function fetchOverpass(query) {
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+          "User-Agent": "RehabConnect Centre Finder",
+        },
+        body: `data=${encodeURIComponent(query)}`,
+        signal: AbortSignal.timeout(10_000),
+      });
+
+      if (response.ok) return response.json();
+      console.warn("Overpass endpoint failed:", endpoint, response.status);
+    } catch (error) {
+      console.warn("Overpass endpoint could not be reached:", endpoint, error);
+    }
+  }
+
+  throw new Error("All Overpass endpoints are unavailable");
 }
 
 async function getCentres(lat, lng) {
@@ -24,20 +53,7 @@ async function getCentres(lat, lng) {
   out center 25;
 `;
 
-  const request = fetch("https://overpass.private.coffee/api/interpreter", {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-      "User-Agent": "RehabConnect Centre Finder",
-    },
-    body: `data=${encodeURIComponent(query)}`,
-  }).then(async (response) => {
-    if (!response.ok) {
-      throw new Error(`Overpass responded with ${response.status}`);
-    }
-
-    const data = await response.json();
+  const request = fetchOverpass(query).then((data) => {
     centreCache.set(key, { createdAt: Date.now(), data });
     return data;
   });
