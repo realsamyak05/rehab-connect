@@ -1,80 +1,33 @@
-.exercises-page {
-  padding: 40px;
+.category-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
 }
 
-.exercise-grid {
-  margin-top: 30px;
-
-  display: grid;
-
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-
-  gap: 20px;
-}
-
-.exercise-card {
-  padding: 20px;
-
-  border-radius: 12px;
-
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
-}
-
-.exercise-card h2 {
-  margin-bottom: 10px;
-}
-
-.exercise-card a {
-  display: inline-block;
-
-  margin-top: 15px;
-
-  text-decoration: none;
-
-  color: white;
-
-  background: #2563eb;
-
-  padding: 10px 16px;
-
-  border-radius: 8px;
-}
-
-.add-tracker-button {
-  display: block;
-  margin-top: 12px;
-  padding: 10px 16px;
-  border: 0;
-  border-radius: 8px;
-  background: #7a0d6b;
-  color: white;
+.category-chip {
+  border: 1px solid #d8c6d3;
+  background: white;
+  color: #5b4752;
+  padding: 6px 14px;
+  border-radius: 999px;
   font: inherit;
+  font-size: 0.9rem;
   cursor: pointer;
 }
 
-.add-tracker-button:disabled {
-  cursor: wait;
+.category-chip:hover {
+  border-color: #7a0d6b;
+}
+
+.category-chip.active {
+  background: #7a0d6b;
+  border-color: #7a0d6b;
+  color: white;
+}
+
+.chip-count {
   opacity: 0.7;
+  font-size: 0.8em;
+  margin-left: 4px;
 }
-
-.exercise-message {
-  margin-top: 15px;
-  color: #7a0d6b;
-  font-weight: bold;
-}
-
-.add-tracker-button.added {
-    background: #22c55e;
-    cursor: default;
-  }
-  
-  .exercise-note {
-    margin-top: 10px;
-    color: #5b4752;
-  }
-  
-  .exercise-message {
-    margin-top: 15px;
-    color: #7a0d6b;
-    font-weight: bold;
-  }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import {
@@ -17,7 +17,27 @@ function Exercises() {
   const [addedExerciseNames, setAddedExerciseNames] = useState([]);
   const [addingId, setAddingId] = useState(null);
   const [message, setMessage] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const navigate = useNavigate();
+
+  // Build the category list once, sorted, with counts for the filter bar
+  const categories = useMemo(() => {
+    const counts = exercises.reduce((acc, ex) => {
+      acc[ex.category] = (acc[ex.category] || 0) + 1;
+      return acc;
+    }, {});
+
+    const sorted = Object.keys(counts).sort();
+    return [
+      { name: "All", count: exercises.length },
+      ...sorted.map((name) => ({ name, count: counts[name] })),
+    ];
+  }, []);
+
+  const visibleExercises = useMemo(() => {
+    if (selectedCategory === "All") return exercises;
+    return exercises.filter((ex) => ex.category === selectedCategory);
+  }, [selectedCategory]);
 
   useEffect(() => {
     let stopTrackerListener = () => {};
@@ -98,10 +118,24 @@ function Exercises() {
         you feel unwell, and consult a health professional when needed.
       </p>
 
+      <div className="category-filter">
+        {categories.map((cat) => (
+          <button
+            key={cat.name}
+            className={`category-chip ${
+              selectedCategory === cat.name ? "active" : ""
+            }`}
+            onClick={() => setSelectedCategory(cat.name)}
+          >
+            {cat.name} <span className="chip-count">{cat.count}</span>
+          </button>
+        ))}
+      </div>
+
       {message && <p className="exercise-message">{message}</p>}
 
       <div className="exercise-grid">
-        {exercises.map((exercise) => {
+        {visibleExercises.map((exercise) => {
           const isAdded = addedExerciseNames.includes(exercise.title);
 
           return (
@@ -133,6 +167,10 @@ function Exercises() {
           );
         })}
       </div>
+
+      {visibleExercises.length === 0 && (
+        <p className="exercise-message">No exercises in this category.</p>
+      )}
     </main>
   );
 }
