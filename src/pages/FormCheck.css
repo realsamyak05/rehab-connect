@@ -104,34 +104,41 @@
 .assessment-panel {
   padding: 27px;
 }
-.assessment-options {
+.assessment-select {
   display: grid;
-  gap: 9px;
+  gap: 7px;
+  color: #54566a;
+  font-size: 0.78rem;
+  font-weight: 800;
 }
-.assessment-options button {
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  gap: 4px;
-  padding: 12px;
+.assessment-select select {
+  width: 100%;
+  padding: 11px;
   border: 1px solid #dedee9;
   border-radius: 9px;
   background: #fff;
   color: #353547;
   font: inherit;
-  font-weight: 800;
-  text-align: left;
-  cursor: pointer;
+  font-weight: 700;
 }
-.assessment-options button span {
-  color: #858799;
-  font-size: 0.78rem;
-  font-weight: 500;
+.assessment-select input {
+  width: 100%;
+  padding: 11px;
+  border: 1px solid #dedee9;
+  border-radius: 9px;
+  background: #fff;
+  color: #353547;
+  font: inherit;
+  font-weight: 700;
 }
-.assessment-options button.selected {
-  background: #f1efff;
-  border-color: #8978de;
+.rep-progress {
+  margin: 13px 0 0;
+  padding: 9px 10px;
+  border-radius: 8px;
+  background: #f3f1ff;
   color: #5748a3;
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 .assessment-panel ol {
   padding-left: 20px;
@@ -225,6 +232,16 @@
   margin-top: 14px;
   color: #858798;
   font-size: 0.78rem;
+}
+.session-complete {
+  max-width: 1040px;
+  margin: 14px auto 0;
+  padding: 11px 13px;
+  border-radius: 9px;
+  background: #e8f7ed;
+  color: #277548;
+  font-size: 0.86rem;
+  font-weight: 750;
 }
 @media (max-width: 720px) {
   .form-check-page {

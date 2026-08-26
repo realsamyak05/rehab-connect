@@ -5,6 +5,9 @@ import {
   FaCircleExclamation,
   FaStop,
 } from "react-icons/fa6";
+import { onAuthStateChanged } from "firebase/auth";
+import { arrayUnion, doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { auth, db } from "../firebase";
 import "./FormCheck.css";
 
 const MEDIAPIPE_URL =
@@ -13,6 +16,13 @@ const WASM_URL =
   "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
 const MODEL_URL =
   "https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task";
+const CHECKS = {
+  knee: { label: "Knee bend", hint: "Target: 100°" },
+  squat: { label: "Squat symmetry", hint: "Compare left / right" },
+  elbow: { label: "Elbow bend", hint: "Target: 90°" },
+  shoulder: { label: "Shoulder lift", hint: "Target: 90°" },
+  wrist: { label: "Wrist reach", hint: "Reach to shoulder height" },
+};
 
 function angleBetween(first, vertex, last) {
   const firstVector = { x: first.x - vertex.x, y: first.y - vertex.y };
@@ -37,12 +47,13 @@ function poseEstimate(landmarks, assessment) {
     landmarks[26],
     landmarks[28],
   );
-  if (leftKneeAngle === null || rightKneeAngle === null) return null;
-  const leftFlexion = Math.round(180 - leftKneeAngle);
-  const rightFlexion = Math.round(180 - rightKneeAngle);
-  const flexion = Math.round((leftFlexion + rightFlexion) / 2);
-  const difference = Math.abs(leftFlexion - rightFlexion);
+  const leftFlexion = leftKneeAngle === null ? null : Math.round(180 - leftKneeAngle);
+  const rightFlexion = rightKneeAngle === null ? null : Math.round(180 - rightKneeAngle);
+  const flexion = leftFlexion === null || rightFlexion === null ? null : Math.round((leftFlexion + rightFlexion) / 2);
+  const difference = leftFlexion === null || rightFlexion === null ? null : Math.abs(leftFlexion - rightFlexion);
   if (assessment === "knee") {
+    if (flexion === null) return null;
+    if (flexion < 10) return null;
     return {
       primary: "Knee flexion estimate: " + flexion + "°",
       detail:
@@ -55,17 +66,56 @@ function poseEstimate(landmarks, assessment) {
       stable: difference < 10,
     };
   }
-  const lessBentSide = leftFlexion < rightFlexion ? "left" : "right";
+  if (assessment === "squat") {
+    if (flexion === null || difference === null) return null;
+    if (flexion < 18) return null;
+    const lessBentSide = leftFlexion < rightFlexion ? "left" : "right";
+    return {
+      primary: "Squat symmetry difference: " + difference + "°",
+      detail:
+        difference < 8
+          ? "Your knee bend looks fairly even in this camera view."
+          : "Your " +
+            lessBentSide +
+            " side is bending less in this camera view. Slow down and use support if needed.",
+      score: Math.max(0, 100 - difference * 5),
+      stable: difference < 8,
+    };
+  }
+  const leftElbowAngle = angleBetween(landmarks[11], landmarks[13], landmarks[15]);
+  const rightElbowAngle = angleBetween(landmarks[12], landmarks[14], landmarks[16]);
+  if (assessment === "elbow") {
+    if (leftElbowAngle === null || rightElbowAngle === null) return null;
+    const elbowFlexion = Math.round(((180 - leftElbowAngle) + (180 - rightElbowAngle)) / 2);
+    if (elbowFlexion < 10) return null;
+    return {
+      primary: "Elbow bend estimate: " + elbowFlexion + "°",
+      detail: elbowFlexion < 90 ? "Your current screen estimate is about " + elbowFlexion + "°. Your selected target is 90°." : "You are at or beyond the selected 90° screen-estimate target.",
+      score: Math.min(100, Math.round((elbowFlexion / 90) * 100)),
+      stable: true,
+    };
+  }
+  const leftShoulderLift = angleBetween(landmarks[23], landmarks[11], landmarks[13]);
+  const rightShoulderLift = angleBetween(landmarks[24], landmarks[12], landmarks[14]);
+  if (leftShoulderLift === null || rightShoulderLift === null) return null;
+  const shoulderLift = Math.round((leftShoulderLift + rightShoulderLift) / 2);
+  if (assessment === "shoulder") {
+    if (shoulderLift < 10) return null;
+    return {
+      primary: "Shoulder lift estimate: " + shoulderLift + "°",
+      detail: shoulderLift < 90 ? "Lift only within a comfortable range. Your selected target is 90°." : "You are at or beyond the selected 90° screen-estimate target.",
+      score: Math.min(100, Math.round((shoulderLift / 90) * 100)),
+      stable: true,
+    };
+  }
+  const averageWristHeight = ((landmarks[11].y + landmarks[12].y) / 2) - ((landmarks[15].y + landmarks[16].y) / 2);
+  const wristReach = Math.round(averageWristHeight * 100);
+  if (wristReach < -4) return null;
   return {
-    primary: "Squat symmetry difference: " + difference + "°",
-    detail:
-      difference < 8
-        ? "Your knee bend looks fairly even in this camera view."
-        : "Your " +
-          lessBentSide +
-          " side is bending less in this camera view. Slow down and use support if needed.",
-    score: Math.max(0, 100 - difference * 5),
-    stable: difference < 8,
+    primary: wristReach >= 0 ? "Wrists are at shoulder height or higher" : "Wrists are approaching shoulder height",
+    detail: "This tracks wrist reach height, not wrist-joint flexion. A side view with your shoulders and wrists visible gives the clearest screen estimate.",
+    score: Math.min(100, Math.max(0, 50 + wristReach * 5)),
+    stable: true,
   };
 }
 
@@ -75,10 +125,17 @@ function FormCheck() {
   const landmarkerRef = useRef(null);
   const frameRef = useRef(null);
   const lastUpdateRef = useRef(0);
+  const activePositionRef = useRef(false);
+  const repCountRef = useRef(0);
+  const lastResultRef = useRef(null);
+  const [user, setUser] = useState(null);
   const [cameraOn, setCameraOn] = useState(false);
   const [assessing, setAssessing] = useState(false);
   const [loadingModel, setLoadingModel] = useState(false);
   const [assessment, setAssessment] = useState("knee");
+  const [targetReps, setTargetReps] = useState(5);
+  const [repCount, setRepCount] = useState(0);
+  const [sessionComplete, setSessionComplete] = useState(false);
   const [result, setResult] = useState(null);
   const [message, setMessage] = useState("");
 
@@ -90,6 +147,8 @@ function FormCheck() {
     },
     [],
   );
+
+  useEffect(() => onAuthStateChanged(auth, setUser), []);
 
   async function startCamera() {
     if (!navigator.mediaDevices?.getUserMedia) {
@@ -122,6 +181,36 @@ function FormCheck() {
     setAssessing(false);
   }
 
+  async function recordAssessment(completedReps, finalResult) {
+    if (!user) {
+      setMessage(
+        "Session complete. Log in next time to save your form-check result.",
+      );
+      return;
+    }
+
+    try {
+      await setDoc(
+        doc(db, "users", user.uid, "tracker", "main"),
+        {
+          formAssessments: arrayUnion({
+            movement: CHECKS[assessment].label,
+            completedReps,
+            targetReps,
+            summary: finalResult?.primary || "Movement session completed",
+            score: finalResult?.score ?? null,
+            completedOn: new Date().toISOString(),
+          }),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+      setMessage("Session complete and result saved to your recovery record.");
+    } catch {
+      setMessage("Session complete, but the result could not be saved.");
+    }
+  }
+
   function stopCamera() {
     stopAssessment();
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -135,6 +224,11 @@ function FormCheck() {
     if (!cameraOn) return;
     setLoadingModel(true);
     setMessage("");
+    setRepCount(0);
+    repCountRef.current = 0;
+    activePositionRef.current = false;
+    lastResultRef.current = null;
+    setSessionComplete(false);
     try {
       if (!landmarkerRef.current) {
         const { FilesetResolver, PoseLandmarker } = await import(
@@ -163,11 +257,28 @@ function FormCheck() {
           lastUpdateRef.current = time;
           const estimate = poseEstimate(detection.landmarks?.[0], assessment);
           setResult(estimate);
-          if (!estimate)
+          if (estimate) {
+            lastResultRef.current = estimate;
+            activePositionRef.current = true;
+            setMessage("");
+          } else if (activePositionRef.current) {
+            activePositionRef.current = false;
+            const nextRep = repCountRef.current + 1;
+            repCountRef.current = nextRep;
+            setRepCount(nextRep);
+            if (nextRep >= targetReps) {
+              window.cancelAnimationFrame(frameRef.current);
+              setAssessing(false);
+              setSessionComplete(true);
+              recordAssessment(nextRep, lastResultRef.current);
+              return;
+            }
+            setMessage("Rep " + nextRep + " recorded. Return to the active position for the next rep.");
+          } else {
             setMessage(
-              "Step back until your hips, knees, and ankles are visible in the frame.",
+              "Move into the selected exercise position and keep the required joints visible.",
             );
-          else setMessage("");
+          }
         }
         frameRef.current = window.requestAnimationFrame(assessFrame);
       };
@@ -187,8 +298,8 @@ function FormCheck() {
         <p className="form-kicker">ON-DEVICE MOTION CHECK</p>
         <h1>See your movement in the moment.</h1>
         <p>
-          Use your camera for a screen-based estimate of knee bend or squat
-          symmetry. Video stays on this device and is not saved.
+          Use your camera for screen-based movement estimates. Video stays on
+          this device and is not saved.
         </p>
       </header>
       <section className="form-safety">
@@ -213,7 +324,7 @@ function FormCheck() {
           >
             <FaCamera />
             <strong>Camera is off</strong>
-            <span>Position your whole lower body in view.</span>
+            <span>Position the joints for your selected check in view.</span>
           </div>
           {cameraOn && (
             <span className="camera-chip">
@@ -223,30 +334,45 @@ function FormCheck() {
         </div>
         <div className="assessment-panel">
           <p className="form-kicker">CHOOSE A CHECK</p>
-          <div className="assessment-options">
-            <button
-              className={assessment === "knee" ? "selected" : ""}
-              onClick={() => {
-                setAssessment("knee");
+          <label className="assessment-select">
+            Movement
+            <select
+              value={assessment}
+              onChange={(event) => {
+                stopAssessment();
+                setAssessment(event.target.value);
                 setResult(null);
+                setMessage("Press Start form check when you are ready.");
               }}
             >
-              Knee flexion<span>Target: 100°</span>
-            </button>
-            <button
-              className={assessment === "squat" ? "selected" : ""}
-              onClick={() => {
-                setAssessment("squat");
-                setResult(null);
-              }}
-            >
-              Squat symmetry<span>Compare left / right</span>
-            </button>
-          </div>
+              {Object.entries(CHECKS).map(([value, check]) => (
+                <option key={value} value={value}>
+                  {check.label} — {check.hint}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="assessment-select">
+            Reps to record
+            <input
+              type="number"
+              min="1"
+              max="30"
+              value={targetReps}
+              onChange={(event) =>
+                setTargetReps(Math.max(1, Number(event.target.value) || 1))
+              }
+              disabled={assessing}
+            />
+          </label>
+          <p className="rep-progress">
+            {repCount} / {targetReps} reps recorded
+          </p>
           <ol>
             <li>Place the camera at hip height, about 2–3 m away.</li>
-            <li>Wear clothing that makes your knees and ankles visible.</li>
-            <li>Move slowly and hold a comfortable position for a moment.</li>
+            <li>Keep the required joints in view and move slowly.</li>
+            <li>Move into position, then return to rest to count one rep.</li>
+            <li>The camera pauses and records your final result at the target.</li>
           </ol>
           {!cameraOn ? (
             <button className="camera-button" onClick={startCamera}>
@@ -309,6 +435,11 @@ function FormCheck() {
           </>
         )}
       </section>
+      {sessionComplete && (
+        <p className="session-complete">
+          Session complete: {repCount} of {targetReps} reps recorded.
+        </p>
+      )}
       <p className="form-privacy">
         Privacy: the camera stream is processed in your browser for this session
         only. Rehab Connect does not upload or store your video.
