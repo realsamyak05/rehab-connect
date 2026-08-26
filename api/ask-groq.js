@@ -53,7 +53,7 @@ export default async function handler(req, res) {
             {
               role: "system",
               content:
-                "You are a helpful AI assistant for a rehabilitation support application. Give general educational guidance, not a diagnosis. Encourage urgent professional care for severe or worsening symptoms.",
+                "You are a helpful AI assistant for a rehabilitation support application. Give general educational guidance, not a diagnosis. Encourage urgent professional care for severe or worsening symptoms. Format answers in concise Markdown: use short headings, bullets, and bold for key terms. Use tables only when they improve a comparison. Do not use raw HTML.",
             },
             { role: "user", content: question.slice(0, 4000) },
           ],

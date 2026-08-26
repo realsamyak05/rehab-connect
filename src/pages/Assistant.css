@@ -38,10 +38,86 @@
     background: white;
   }
   
-  .assistant-answer p {
-    white-space: pre-line;
-    line-height: 1.7;
-  }
+.assistant-markdown {
+  color: #25202a;
+  line-height: 1.7;
+}
+
+.assistant-markdown > :first-child {
+  margin-top: 0;
+}
+
+.assistant-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.assistant-markdown h1,
+.assistant-markdown h2,
+.assistant-markdown h3 {
+  color: #4e0b46;
+  line-height: 1.25;
+  margin: 1.4rem 0 0.6rem;
+}
+
+.assistant-markdown h1 {
+  font-size: 1.45rem;
+}
+
+.assistant-markdown h2 {
+  font-size: 1.25rem;
+}
+
+.assistant-markdown h3 {
+  font-size: 1.1rem;
+}
+
+.assistant-markdown p {
+  margin: 0.65rem 0;
+}
+
+.assistant-markdown ul {
+  margin: 0.65rem 0;
+  padding-left: 1.4rem;
+}
+
+.assistant-markdown li + li {
+  margin-top: 0.3rem;
+}
+
+.assistant-markdown hr {
+  border: 0;
+  border-top: 1px solid #e5d9e4;
+  margin: 1.25rem 0;
+}
+
+.assistant-table-wrap {
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.assistant-table {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.assistant-table th,
+.assistant-table td {
+  border: 1px solid #e2d8e1;
+  padding: 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.assistant-table th {
+  background: #f8eef7;
+  color: #4e0b46;
+}
+
+.assistant-table tbody tr:nth-child(even) {
+  background: #fcf9fc;
+}
   
   @media (max-width: 700px) {
     .assistant-page {
@@ -65,4 +141,3 @@
     }
   }
 
-  
