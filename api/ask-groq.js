@@ -48,12 +48,12 @@ export default async function handler(req, res) {
           Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
+          model: "openai/gpt-oss-20b",
           messages: [
             {
               role: "system",
               content:
-                "You are a helpful AI assistant for a rehabilitation support application.",
+                "You are a helpful AI assistant for a rehabilitation support application. Give general educational guidance, not a diagnosis. Encourage urgent professional care for severe or worsening symptoms.",
             },
             { role: "user", content: question.slice(0, 4000) },
           ],
