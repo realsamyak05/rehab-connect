@@ -1,5 +1,9 @@
 import "./Centres.css";
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +18,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
 
-const DEFAULT_POSITION = [26.8467, 80.9462];
+const DEFAULT_POSITION = [20.5937, 78.9629];
 const CACHE_TTL_MS = 5 * 60 * 1_000;
 const centreCache = new Map();
 const locationCache = new Map();
@@ -50,12 +54,22 @@ function formatCentres(features, label) {
     .slice(0, 10);
 }
 
-function RecenterMap({ position }) {
+const centreMarkerIcon = L.icon({
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
+
+function RecenterMap({ position, hasSearched }) {
   const map = useMap();
 
   useEffect(() => {
-    map.setView(position, 11);
-  }, [map, position]);
+    map.setView(position, hasSearched ? 11 : 5);
+  }, [map, position, hasSearched]);
 
   return null;
 }
@@ -69,10 +83,10 @@ function Centres() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [searchedPlace, setSearchedPlace] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
 
   const navigate = useNavigate();
   const requestId = useRef(0);
-  const hasUserSearch = useRef(false);
 
   useEffect(() => {
     let stopSavedCentres = () => {};
@@ -138,6 +152,7 @@ function Centres() {
     setError("");
     setMapPosition([lat, lng]);
     setSearchedPlace(label);
+    setHasSearched(true);
 
     if (cached && Date.now() - cached.createdAt < CACHE_TTL_MS) {
       setCentres(cached.centres);
@@ -190,35 +205,8 @@ function Centres() {
     }
   }, []);
 
-  useEffect(() => {
-    if (!navigator.geolocation) {
-      setError("Geolocation is not supported. Search for a city instead.");
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        if (!hasUserSearch.current) {
-          fetchCentres(coords.latitude, coords.longitude, "your location");
-        }
-      },
-      () => {
-        if (!hasUserSearch.current) {
-          setError("Location access was denied. Search for a city instead.");
-        }
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10_000,
-        maximumAge: 300_000,
-      },
-    );
-  }, [fetchCentres]);
-
   async function handleSearch(event) {
     event.preventDefault();
-
-    hasUserSearch.current = true;
     const lookupRequest = ++requestId.current;
     const place = search.trim();
 
@@ -284,6 +272,30 @@ function Centres() {
     }
   }
 
+  function handleLocationSearch() {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported. Search for a city instead.");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        fetchCentres(coords.latitude, coords.longitude, "your location");
+      },
+      () => {
+        setLoading(false);
+        setError("Location access was denied. Search for a city instead.");
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10_000,
+        maximumAge: 300_000,
+      },
+    );
+  }
+
   const resultLabel = useMemo(
     () =>
       searchedPlace === "your location" ? "near you" : `near ${searchedPlace}`,
@@ -305,6 +317,14 @@ function Centres() {
         <button className="search-button" type="submit" disabled={loading}>
           {loading ? "Searching..." : "Search"}
         </button>
+        <button
+          className="location-search-button"
+          type="button"
+          onClick={handleLocationSearch}
+          disabled={loading}
+        >
+          Use my location
+        </button>
       </form>
 
       {loading && <p>Finding rehabilitation centres...</p>}
@@ -321,7 +341,7 @@ function Centres() {
           borderRadius: "12px",
         }}
       >
-        <RecenterMap position={mapPosition} />
+        <RecenterMap position={mapPosition} hasSearched={hasSearched} />
 
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -329,7 +349,11 @@ function Centres() {
         />
 
         {centres.map((centre) => (
-          <Marker key={centre.id} position={[centre.lat, centre.lng]}>
+          <Marker
+            key={centre.id}
+            position={[centre.lat, centre.lng]}
+            icon={centreMarkerIcon}
+          >
             <Popup>
               <strong>{centre.name}</strong>
               <br />
