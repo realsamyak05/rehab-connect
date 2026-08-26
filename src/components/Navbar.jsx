@@ -4,6 +4,7 @@ import {
   FaBars,
   FaChartLine,
   FaDumbbell,
+  FaCamera,
   FaHeart,
   FaHospital,
   FaHome,
@@ -68,6 +69,9 @@ function Navbar() {
         </Link>
         <Link to="/tracker" onClick={closeMenu}>
           <FaChartLine /> Tracker
+        </Link>
+        <Link to="/form-check" onClick={closeMenu}>
+          <FaCamera /> Form Check
         </Link>
         <Link to="/marketplace" onClick={closeMenu}>
           <FaStore /> Marketplace

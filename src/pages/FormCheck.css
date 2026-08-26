@@ -1,0 +1,243 @@
+.form-check-page {
+  min-height: 75vh;
+  padding: 52px max(5vw, 32px);
+  background: #f7f8fb;
+  color: #202234;
+}
+.form-check-page > header,
+.form-safety,
+.form-workspace,
+.assessment-result,
+.form-privacy {
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.form-kicker {
+  margin: 0 0 7px;
+  color: #7565cf;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+}
+.form-check-page h1 {
+  margin: 0;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.05em;
+}
+.form-check-page > header > p:last-child {
+  color: #73768a;
+  max-width: 660px;
+  line-height: 1.5;
+}
+.form-safety {
+  display: flex;
+  align-items: start;
+  gap: 10px;
+  margin-top: 25px;
+  padding: 13px 15px;
+  border-radius: 11px;
+  background: #fff6e5;
+  color: #805e2f;
+  line-height: 1.4;
+  font-size: 0.86rem;
+}
+.form-safety svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+.form-workspace {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  margin-top: 20px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid #e6e7ef;
+  box-shadow: 0 12px 30px rgba(37, 38, 62, 0.07);
+}
+.camera-panel {
+  position: relative;
+  min-height: 380px;
+  overflow: hidden;
+  background: #28283c;
+}
+.camera-feed {
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+.hidden {
+  display: none;
+}
+.camera-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  color: #e5e4f2;
+}
+.camera-placeholder svg {
+  font-size: 34px;
+  color: #b7aaf4;
+}
+.camera-placeholder span {
+  color: #b8b7ca;
+  font-size: 0.86rem;
+}
+.camera-chip {
+  position: absolute;
+  left: 15px;
+  top: 15px;
+  padding: 7px 10px;
+  border-radius: 20px;
+  background: rgba(25, 25, 42, 0.72);
+  color: #fff;
+  font-size: 0.74rem;
+  font-weight: 750;
+}
+.assessment-panel {
+  padding: 27px;
+}
+.assessment-options {
+  display: grid;
+  gap: 9px;
+}
+.assessment-options button {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid #dedee9;
+  border-radius: 9px;
+  background: #fff;
+  color: #353547;
+  font: inherit;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+.assessment-options button span {
+  color: #858799;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+.assessment-options button.selected {
+  background: #f1efff;
+  border-color: #8978de;
+  color: #5748a3;
+}
+.assessment-panel ol {
+  padding-left: 20px;
+  color: #76788a;
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+.camera-button,
+.stop-button {
+  border: 0;
+  border-radius: 9px;
+  padding: 11px 13px;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.camera-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  background: #6756c5;
+}
+.camera-button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+.camera-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.stop-button {
+  color: #a34c4c;
+  background: #fff;
+  border: 1px solid #e7caca;
+}
+.assessment-result {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 24px;
+  border: 1px solid #e6e6ee;
+  border-radius: 17px;
+  background: #fff;
+}
+.assessment-result h2 {
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+.assessment-result p:not(.form-kicker) {
+  margin: 7px 0 0;
+  color: #727588;
+  line-height: 1.5;
+}
+.result-icon {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #6a59c7;
+  background: #f0edff;
+}
+.result-icon.good {
+  color: #3c9a69;
+  background: #e9f8ef;
+}
+.result-icon.caution {
+  color: #be7a2f;
+  background: #fff4e5;
+}
+.estimate-meter {
+  width: min(330px, 100%);
+  height: 8px;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #ecebf3;
+}
+.estimate-meter div {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7160d3, #9a85ed);
+  transition: width 0.3s;
+}
+.form-privacy {
+  margin-top: 14px;
+  color: #858798;
+  font-size: 0.78rem;
+}
+@media (max-width: 720px) {
+  .form-check-page {
+    padding: 30px 16px;
+  }
+  .form-workspace {
+    grid-template-columns: 1fr;
+  }
+  .camera-panel,
+  .camera-feed {
+    min-height: 270px;
+  }
+  .assessment-result {
+    align-items: flex-start;
+  }
+}

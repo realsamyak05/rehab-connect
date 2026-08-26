@@ -12,6 +12,7 @@ import Login from "./pages/Login";
 import SavedCentres from "./pages/SavedCentres";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import FormCheck from "./pages/FormCheck";
 function App() {
   return (
     <BrowserRouter>
@@ -27,6 +28,7 @@ function App() {
         <Route path="/assistant" element={<Assistant />} />
         <Route path="/saved-centres" element={<SavedCentres />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/form-check" element={<FormCheck />} />
         <Route path="/login" element={<Login />} />
       </Routes>
 
