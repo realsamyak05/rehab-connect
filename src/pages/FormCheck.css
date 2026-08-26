@@ -49,13 +49,18 @@
 .form-workspace {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.85fr);
-  align-items: start;
+  align-items: stretch;
   margin-top: 20px;
   overflow: hidden;
   border-radius: 20px;
   background: #fff;
   border: 1px solid #e6e7ef;
   box-shadow: 0 12px 30px rgba(37, 38, 62, 0.07);
+}
+.camera-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 .camera-panel {
   position: relative;
@@ -171,6 +176,13 @@
 .angle-label { fill: #a5621f; font-size: 10px; font-weight: 850; text-anchor: middle; }
 .diagram-callout { fill: #5b5290; font-size: 10px; font-weight: 850; text-anchor: middle; }
 .joint-diagram > p { margin: 0; color: #706d83; font-size: .77rem; line-height: 1.4; }
+.joint-diagram .diagram-meaning {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e0f5;
+  color: #59546f;
+  font-weight: 650;
+}
 .assessment-select {
   display: grid;
   gap: 7px;
@@ -254,6 +266,15 @@
   border-radius: 17px;
   background: #fff;
 }
+.camera-column .assessment-result {
+  flex: 1;
+  min-height: 155px;
+  margin: 0;
+  border: 0;
+  border-top: 1px solid #e6e6ee;
+  border-radius: 0;
+  box-shadow: none;
+}
 .assessment-result h2 {
   margin: 0;
   letter-spacing: -0.03em;
@@ -332,6 +353,9 @@
   }
   .form-workspace {
     grid-template-columns: 1fr;
+  }
+  .camera-column .assessment-result {
+    flex: initial;
   }
   .camera-panel,
   .camera-feed {

@@ -57,30 +57,35 @@ const DIAGRAMS = {
     instruction: "Stand side-on with your hip, knee, and ankle visible.",
     angle: "100° target",
     view: "SIDE VIEW",
+    meaning: "The orange point marks the knee. The arc is the bend the camera measures.",
   },
   squat: {
     title: "Squat symmetry",
     instruction: "Face the camera so both knees and ankles stay in view.",
     angle: "Compare both sides",
     view: "FRONT VIEW",
+    meaning: "Both orange points are measured so the app can compare left and right knee bend.",
   },
   elbow: {
     title: "Elbow bend",
     instruction: "Keep your shoulder, elbow, and wrist visible from the side.",
     angle: "90° target",
     view: "SIDE VIEW",
+    meaning: "A 90° elbow bend makes a right angle. It is a scoring reference, not a required medical outcome.",
   },
   shoulder: {
     title: "Shoulder lift",
     instruction: "Show your hip, shoulder, and raised elbow in the frame.",
     angle: "90° target",
     view: "SIDE VIEW",
+    meaning: "The orange point marks the shoulder; the raised arm is the 90° reference position.",
   },
   wrist: {
     title: "Wrist reach",
     instruction: "Face the camera and keep both shoulders and wrists visible.",
     angle: "Shoulder-height reach",
     view: "FRONT VIEW",
+    meaning: "The dashed line is shoulder height. Keep both wrists visible as they reach that line.",
   },
 };
 
@@ -89,7 +94,7 @@ function MotionIllustration({ assessment }) {
 
   if (assessment === "knee") return <svg viewBox="0 0 240 160" role="img" aria-label="Side view knee bend guide">{common}<circle className="body-head" cx="72" cy="25" r="13" /><path className="body-line" d="M72 39 L78 76 L112 101" /><path className="body-line muted" d="M78 76 L51 100" /><path className="body-line highlight" d="M112 101 L158 126" /><circle className="joint-focus" cx="112" cy="101" r="8" /><path className="angle-arc" d="M96 102 A20 20 0 0 1 123 89" /><text className="angle-label" x="134" y="92">angle</text><text className="diagram-callout" x="112" y="121">Knee</text></svg>;
   if (assessment === "squat") return <svg viewBox="0 0 240 160" role="img" aria-label="Front view squat symmetry guide">{common}<circle className="body-head" cx="120" cy="23" r="13" /><path className="body-line" d="M120 37 L120 75 M84 51 L120 48 L156 51" /><path className="body-line highlight" d="M120 75 L88 105 L73 136 M120 75 L152 105 L167 136" /><circle className="joint-focus" cx="88" cy="105" r="7" /><circle className="joint-focus" cx="152" cy="105" r="7" /><path className="angle-arc" d="M76 107 A17 17 0 0 1 95 92 M145 92 A17 17 0 0 1 164 107" /><text className="diagram-callout" x="70" y="91">L</text><text className="diagram-callout" x="170" y="91">R</text></svg>;
-  if (assessment === "elbow") return <svg viewBox="0 0 240 160" role="img" aria-label="Side view elbow bend guide">{common}<circle className="body-head" cx="78" cy="25" r="13" /><path className="body-line" d="M78 39 L82 112 M82 62 L121 80" /><path className="body-line highlight" d="M121 80 L161 51" /><circle className="joint-focus" cx="121" cy="80" r="8" /><path className="angle-arc" d="M106 79 A19 19 0 0 1 130 64" /><text className="angle-label" x="143" y="66">angle</text><text className="diagram-callout" x="122" y="102">Elbow</text></svg>;
+  if (assessment === "elbow") return <svg viewBox="0 0 240 160" role="img" aria-label="Side view elbow bent to a 90 degree right angle">{common}<circle className="body-head" cx="72" cy="25" r="13" /><path className="body-line" d="M72 39 L76 119 M76 57 L121 57" /><path className="body-line highlight" d="M121 57 L121 108" /><circle className="joint-focus" cx="121" cy="57" r="8" /><path className="angle-arc" d="M103 57 A18 18 0 0 1 121 75" /><text className="angle-label" x="144" y="78">90°</text><text className="diagram-callout" x="122" y="128">Elbow</text></svg>;
   if (assessment === "shoulder") return <svg viewBox="0 0 240 160" role="img" aria-label="Side view shoulder lift guide">{common}<circle className="body-head" cx="89" cy="25" r="13" /><path className="body-line" d="M89 39 L89 116 M89 66 L119 66" /><path className="body-line highlight" d="M119 66 L119 22" /><circle className="joint-focus" cx="119" cy="66" r="8" /><path className="angle-arc" d="M101 66 A19 19 0 0 1 119 47" /><text className="angle-label" x="137" y="50">90°</text><text className="diagram-callout" x="121" y="91">Shoulder</text></svg>;
   return <svg viewBox="0 0 240 160" role="img" aria-label="Front view wrist reach guide">{common}<circle className="body-head" cx="120" cy="25" r="13" /><path className="body-line" d="M120 39 L120 118 M120 61 L82 61 M120 61 L158 61" /><path className="body-line highlight" d="M82 61 L59 61 M158 61 L181 61" /><circle className="joint-focus" cx="59" cy="61" r="7" /><circle className="joint-focus" cx="181" cy="61" r="7" /><path className="reach-guide" d="M39 61 H201" /><text className="angle-label" x="120" y="53">shoulder height</text></svg>;
 }
@@ -110,6 +115,7 @@ function JointDiagram({ assessment, value }) {
       <span className="diagram-view">{diagram.view}</span>
       <MotionIllustration assessment={assessment} />
       <p>{diagram.instruction}</p>
+      <p className="diagram-meaning">{diagram.meaning}</p>
     </aside>
   );
 }
@@ -551,6 +557,39 @@ function getRestThreshold(assessment) {
     default:
       return 15;
   }
+}
+
+function AssessmentResult({ result, message, savingAngle, onAddAngle }) {
+  return (
+    <section className="assessment-result" aria-live="polite">
+      {result ? (
+        <>
+          <div className={result.stable ? "result-icon good" : "result-icon caution"}>
+            <FaCircleCheck />
+          </div>
+          <div>
+            <p className="form-kicker">LIVE ANGLE</p>
+            <h2>{result.primary}</h2>
+            <p>{result.detail}</p>
+            <div className="estimate-meter"><div style={{ width: result.score + "%" }} /></div>
+            <button className="dashboard-angle-button" onClick={onAddAngle} disabled={savingAngle}>
+              {savingAngle ? "Adding to dashboard..." : "Add angle to dashboard"}
+              {!savingAngle && <FaArrowRight />}
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="result-icon"><FaCamera /></div>
+          <div>
+            <p className="form-kicker">LIVE ANGLE</p>
+            <h2>Ready when you are.</h2>
+            <p>{message || "Start the form check to see your measured angle here."}</p>
+          </div>
+        </>
+      )}
+    </section>
+  );
 }
 
 function FormCheck() {
@@ -1067,31 +1106,31 @@ function FormCheck() {
       </section>
 
       <section className="form-workspace">
-        <div className="camera-panel">
-          <video
-            ref={videoRef}
-            className={cameraOn ? "camera-feed" : "camera-feed hidden"}
-            playsInline
-            muted
-          />
-
-          <div
-            className={
-              cameraOn ? "camera-placeholder hidden" : "camera-placeholder"
-            }
-          >
-            <FaCamera />
-
-            <strong>Camera is off</strong>
-
-            <span>Position the joints for your selected check in view.</span>
+        <div className="camera-column">
+          <div className="camera-panel">
+            <video
+              ref={videoRef}
+              className={cameraOn ? "camera-feed" : "camera-feed hidden"}
+              playsInline
+              muted
+            />
+            <div className={cameraOn ? "camera-placeholder hidden" : "camera-placeholder"}>
+              <FaCamera />
+              <strong>Camera is off</strong>
+              <span>Position the joints for your selected check in view.</span>
+            </div>
+            {cameraOn && (
+              <span className="camera-chip">
+                {assessing ? "● Analyzing on this device" : "Camera preview"}
+              </span>
+            )}
           </div>
-
-          {cameraOn && (
-            <span className="camera-chip">
-              {assessing ? "● Analyzing on this device" : "Camera preview"}
-            </span>
-          )}
+          <AssessmentResult
+            result={result}
+            message={message}
+            savingAngle={savingAngle}
+            onAddAngle={addAngleToDashboard}
+          />
         </div>
 
         <div className="assessment-panel">
@@ -1157,7 +1196,6 @@ function FormCheck() {
 
             <li>
               The target angle is used to score the movement; you do not need to
-              reach the target for the rep to count.
             </li>
           </ol>
 
@@ -1189,62 +1227,6 @@ function FormCheck() {
             </div>
           )}
         </div>
-      </section>
-
-      <section className="assessment-result" aria-live="polite">
-        {result ? (
-          <>
-            <div
-              className={
-                result.stable ? "result-icon good" : "result-icon caution"
-              }
-            >
-              <FaCircleCheck />
-            </div>
-
-            <div>
-              <p className="form-kicker">LIVE SCREEN ESTIMATE</p>
-
-              <h2>{result.primary}</h2>
-
-              <p>{result.detail}</p>
-
-              <div className="estimate-meter">
-                <div
-                  style={{
-                    width: result.score + "%",
-                  }}
-                />
-              </div>
-
-              <button
-                className="dashboard-angle-button"
-                onClick={addAngleToDashboard}
-                disabled={savingAngle}
-              >
-                {savingAngle ? "Adding to dashboard..." : "Add angle to dashboard"}
-                {!savingAngle && <FaArrowRight />}
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="result-icon">
-              <FaCamera />
-            </div>
-
-            <div>
-              <p className="form-kicker">WAITING FOR A POSE</p>
-
-              <h2>Ready when you are.</h2>
-
-              <p>
-                {message ||
-                  "Turn on the camera, then start the form check to see an on-device movement estimate."}
-              </p>
-            </div>
-          </>
-        )}
       </section>
 
       {sessionComplete && (
