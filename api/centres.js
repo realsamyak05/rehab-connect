@@ -1,38 +1,9 @@
 const SEARCH_RADIUS_METRES = 5_000;
 const CACHE_TTL_MS = 5 * 60 * 1_000;
 const centreCache = new Map();
-const OVERPASS_ENDPOINTS = [
-  "https://overpass-api.de/api/interpreter",
-  "https://overpass.private.coffee/api/interpreter",
-  "https://overpass.kumi.systems/api/interpreter",
-];
 
 function cacheKey(lat, lng) {
   return `${lat.toFixed(2)},${lng.toFixed(2)}`;
-}
-
-async function fetchOverpass(query) {
-  for (const endpoint of OVERPASS_ENDPOINTS) {
-    try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-          "User-Agent": "RehabConnect Centre Finder",
-        },
-        body: `data=${encodeURIComponent(query)}`,
-        signal: AbortSignal.timeout(10_000),
-      });
-
-      if (response.ok) return response.json();
-      console.warn("Overpass endpoint failed:", endpoint, response.status);
-    } catch (error) {
-      console.warn("Overpass endpoint could not be reached:", endpoint, error);
-    }
-  }
-
-  throw new Error("All Overpass endpoints are unavailable");
 }
 
 async function getCentres(lat, lng) {
@@ -43,17 +14,26 @@ async function getCentres(lat, lng) {
     return cached.data;
   }
 
-  const query = `
-  [out:json][timeout:8];
-  (
-    nwr["healthcare"="rehabilitation"](around:${SEARCH_RADIUS_METRES},${lat},${lng});
-    nwr["amenity"="clinic"](around:${SEARCH_RADIUS_METRES},${lat},${lng});
-    nwr["amenity"="hospital"](around:${SEARCH_RADIUS_METRES},${lat},${lng});
-  );
-  out center 25;
-`;
+  if (!process.env.GEOAPIFY_KEY) {
+    throw new Error("GEOAPIFY_KEY is not configured");
+  }
 
-  const request = fetchOverpass(query).then((data) => {
+  const params = new URLSearchParams({
+    categories: "healthcare",
+    filter: `circle:${lng},${lat},${SEARCH_RADIUS_METRES}`,
+    limit: "10",
+    apiKey: process.env.GEOAPIFY_KEY,
+  });
+
+  const request = fetch(
+    `https://api.geoapify.com/v2/places?${params.toString()}`,
+    { headers: { Accept: "application/json" } },
+  ).then(async (response) => {
+    if (!response.ok) {
+      throw new Error(`Geoapify responded with ${response.status}`);
+    }
+
+    const data = await response.json();
     centreCache.set(key, { createdAt: Date.now(), data });
     return data;
   });

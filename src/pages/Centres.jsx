@@ -23,27 +23,25 @@ function cacheKey(lat, lng) {
   return `${lat.toFixed(2)},${lng.toFixed(2)}`;
 }
 
-function formatCentres(elements, label) {
-  return elements
+function formatCentres(features, label) {
+  return features
     .map((place) => {
-      const placeLat = place.lat ?? place.center?.lat;
-      const placeLng = place.lon ?? place.center?.lon;
+      const [placeLng, placeLat] = place.geometry?.coordinates ?? [];
 
       if (placeLat == null || placeLng == null) return null;
 
-      const tags = place.tags ?? {};
+      const properties = place.properties ?? {};
 
       return {
-        id: `${place.type}-${place.id}`,
-        name: tags.name ?? "Healthcare centre",
-        city: tags["addr:city"] ?? label,
-        type: tags.healthcare ?? tags.amenity ?? "Healthcare",
-        address:
-          (tags["addr:full"] ??
-            [tags["addr:housenumber"], tags["addr:street"]]
-              .filter(Boolean)
-              .join(" ")) ||
-          "Address unavailable",
+        id: String(
+          properties.place_id ??
+            properties.datasource?.raw_id ??
+            `${placeLat}-${placeLng}`,
+        ),
+        name: properties.name ?? "Healthcare centre",
+        city: properties.city ?? label,
+        type: properties.categories?.join(", ") ?? "Healthcare",
+        address: properties.formatted ?? "Address unavailable",
         lat: placeLat,
         lng: placeLng,
       };
@@ -166,7 +164,7 @@ function Centres() {
       if (!response.ok) throw new Error("Could not load centres");
 
       const data = await response.json();
-      const nearbyCentres = formatCentres(data.elements ?? [], label);
+      const nearbyCentres = formatCentres(data.features ?? [], label);
 
       centreCache.set(key, {
         createdAt: Date.now(),
