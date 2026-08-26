@@ -1,68 +1,79 @@
-const exercises = [
-  {
-    id: 1,
-    title: "Arm Stretch",
-    category: "Arm",
-    duration: "10 min",
-    video: "https://www.youtube.com/watch?v=vZA31GMOtZE",
-  },
+const videoSearch = (query) =>
+  `https://www.youtube.com/results?search_query=${encodeURIComponent(
+    `${query} physiotherapy exercise`,
+  )}`;
 
-  {
-    id: 2,
-    title: "Leg Rehabilitation",
-    category: "Leg",
-    duration: "15 min",
-    video: "https://www.youtube.com/watch?v=1DYH5ud3zHo",
-  },
-
-  {
-    id: 3,
-    title: "Back Pain Relief",
-    category: "Back",
-    duration: "12 min",
-    video: "https://www.youtube.com/watch?v=4BOTvaRaDjI",
-  },
-
-  {
-    id: 4,
-    title: "Shoulder Mobility",
-    category: "Shoulder",
-    duration: "8 min",
-    video: "https://www.youtube.com/watch?v=6jHsraw2NIk",
-  },
-
-  {
-    id: 5,
-    title: "Ankle Mobility",
-    category: "Leg",
-    duration: "8 min",
-    video:
-      "https://www.youtube.com/results?search_query=gentle+ankle+mobility+exercises",
-  },
-  {
-    id: 6,
-    title: "Hand Mobility",
-    category: "Hand",
-    duration: "10 min",
-    video:
-      "https://www.youtube.com/results?search_query=gentle+hand+mobility+exercises",
-  },
-  {
-    id: 7,
-    title: "Seated Balance Exercise",
-    category: "Balance",
-    duration: "10 min",
-    video:
-      "https://www.youtube.com/results?search_query=seated+balance+exercises",
-  },
-  {
-    id: 8,
-    title: "Neck Mobility",
-    category: "Neck",
-    duration: "7 min",
-    video:
-      "https://www.youtube.com/results?search_query=gentle+neck+mobility+exercises",
-  },
+const exerciseLibrary = [
+  ["Arm Stretch", "Arm", "10 min", "gentle arm stretches"],
+  ["Leg Rehabilitation", "Leg", "15 min", "gentle leg rehabilitation"],
+  ["Back Mobility", "Back", "12 min", "gentle back mobility"],
+  ["Shoulder Mobility", "Shoulder", "8 min", "gentle shoulder mobility"],
+  ["Ankle Mobility", "Ankle", "8 min", "gentle ankle mobility"],
+  ["Hand Mobility", "Hand", "10 min", "gentle hand mobility"],
+  ["Seated Balance", "Balance", "10 min", "seated balance"],
+  ["Neck Mobility", "Neck", "7 min", "gentle neck mobility"],
+  ["Seated Marching", "Seated", "5 min", "seated marching"],
+  ["Sit to Stand", "Leg", "8 min", "sit to stand exercise"],
+  ["Supported Heel Raises", "Leg", "5 min", "supported heel raises"],
+  ["Supported Toe Raises", "Leg", "5 min", "supported toe raises"],
+  ["Seated Knee Extension", "Knee", "8 min", "seated knee extension"],
+  ["Supported Knee Bends", "Knee", "8 min", "supported knee bends"],
+  ["Quadriceps Set", "Knee", "5 min", "quadriceps set"],
+  ["Seated Hip March", "Hip", "6 min", "seated hip marching"],
+  ["Glute Squeeze", "Hip", "5 min", "glute squeeze"],
+  ["Standing Hip Abduction", "Hip", "8 min", "standing hip abduction supported"],
+  ["Seated Hamstring Stretch", "Leg", "6 min", "seated hamstring stretch"],
+  ["Wall Calf Stretch", "Leg", "5 min", "wall calf stretch"],
+  ["Ankle Alphabet", "Ankle", "5 min", "ankle alphabet"],
+  ["Ankle Pumps", "Ankle", "5 min", "ankle pumps"],
+  ["Toe Curls", "Foot", "5 min", "toe curls exercise"],
+  ["Towel Foot Scrunch", "Foot", "6 min", "towel foot scrunch"],
+  ["Wrist Circles", "Hand", "4 min", "wrist circles"],
+  ["Wrist Flexor Stretch", "Hand", "5 min", "wrist flexor stretch"],
+  ["Wrist Extensor Stretch", "Hand", "5 min", "wrist extensor stretch"],
+  ["Finger Tendon Glides", "Hand", "6 min", "finger tendon glides"],
+  ["Thumb Mobility", "Hand", "5 min", "thumb mobility"],
+  ["Elbow Bends", "Arm", "5 min", "elbow bends"],
+  ["Light Bicep Curl", "Arm", "8 min", "light bicep curl seated"],
+  ["Light Tricep Extension", "Arm", "8 min", "light tricep extension seated"],
+  ["Shoulder Blade Squeeze", "Shoulder", "5 min", "shoulder blade squeeze"],
+  ["Shoulder Pendulum", "Shoulder", "5 min", "shoulder pendulum"],
+  ["Wall Slide", "Shoulder", "6 min", "shoulder wall slides"],
+  ["Shoulder External Rotation", "Shoulder", "8 min", "shoulder external rotation gentle"],
+  ["Doorway Chest Stretch", "Shoulder", "5 min", "doorway chest stretch"],
+  ["Upper Trapezius Stretch", "Neck", "5 min", "upper trapezius stretch"],
+  ["Chin Tuck", "Neck", "5 min", "chin tuck exercise"],
+  ["Neck Side Bend", "Neck", "5 min", "gentle neck side bend"],
+  ["Neck Rotation", "Neck", "5 min", "gentle neck rotation"],
+  ["Cat-Cow Mobility", "Back", "6 min", "gentle cat cow mobility"],
+  ["Pelvic Tilt", "Back", "6 min", "pelvic tilt exercise"],
+  ["Single Knee to Chest", "Back", "6 min", "single knee to chest stretch"],
+  ["Seated Spinal Twist", "Back", "5 min", "seated spinal twist gentle"],
+  ["Standing Back Extension", "Back", "5 min", "standing back extension gentle"],
+  ["Abdominal Bracing", "Core", "6 min", "abdominal bracing exercise"],
+  ["Modified Bird Dog", "Core", "8 min", "modified bird dog exercise"],
+  ["Bridge Exercise", "Core", "8 min", "bridge exercise gentle"],
+  ["Diaphragmatic Breathing", "Breathing", "5 min", "diaphragmatic breathing exercise"],
+  ["Box Breathing", "Breathing", "4 min", "box breathing exercise"],
+  ["Seated Side Reach", "Seated", "5 min", "seated side reach stretch"],
+  ["Seated Trunk Rotation", "Seated", "5 min", "seated trunk rotation"],
+  ["Supported Weight Shift", "Balance", "6 min", "supported weight shift balance"],
+  ["Supported Tandem Stand", "Balance", "5 min", "supported tandem stand"],
+  ["Supported Single-Leg Stand", "Balance", "5 min", "supported single leg stand"],
+  ["Supported March in Place", "Balance", "6 min", "supported march in place"],
+  ["Supported Side Steps", "Balance", "6 min", "supported side steps"],
+  ["Gentle Walking Routine", "Walking", "10 min", "gentle walking routine"],
+  ["Chair Yoga Flow", "Seated", "10 min", "chair yoga flow gentle"],
 ];
+
+const exercises = exerciseLibrary.map(
+  ([title, category, duration, query], index) => ({
+    id: index + 1,
+    title,
+    category,
+    duration,
+    video: videoSearch(query),
+  }),
+);
 
 export default exercises;

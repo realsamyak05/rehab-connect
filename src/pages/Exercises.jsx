@@ -94,8 +94,8 @@ function Exercises() {
     <main className="exercises-page">
       <h1>Exercise Library</h1>
       <p className="exercise-note">
-        Choose gentle exercises suitable for you. Stop if you feel pain and
-        consult a health professional when needed.
+        Explore {exercises.length} gentle exercises. Stop if pain gets worse or
+        you feel unwell, and consult a health professional when needed.
       </p>
 
       {message && <p className="exercise-message">{message}</p>}
