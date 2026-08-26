@@ -1,160 +1,109 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  onAuthStateChanged,
-  updateProfile as updateAuthProfile,
-} from "firebase/auth";
+import { onAuthStateChanged, updateProfile as updateAuthProfile } from "firebase/auth";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { FaArrowRight, FaCheck, FaPlus, FaWandMagicSparkles } from "react-icons/fa6";
 import { auth, db } from "../firebase";
+import exercises from "../data/exercises";
 import "./Profile.css";
 
-const EXERCISE_CATEGORIES = [
-  "Arm",
-  "Leg",
-  "Back",
-  "Shoulder",
-  "Hand",
-  "Balance",
-  "Neck",
+const keywordCategories = [
+  { words: ["knee", "leg", "hip", "ankle", "foot", "walk", "walking"], categories: ["Knee", "Hip", "Ankle", "Leg"] },
+  { words: ["shoulder", "arm", "elbow"], categories: ["Shoulder", "Arm"] },
+  { words: ["back", "spine", "core"], categories: ["Back", "Core"] },
+  { words: ["neck", "head"], categories: ["Neck"] },
+  { words: ["hand", "wrist", "finger", "thumb"], categories: ["Hand"] },
+  { words: ["balance", "fall", "unsteady"], categories: ["Balance", "Seated"] },
 ];
+const minutesFromDuration = (duration) => Number.parseInt(duration, 10) || 5;
+function suggestedExercises(problem) {
+  const text = problem.toLowerCase();
+  const match = keywordCategories.find(({ words }) => words.some((word) => text.includes(word)));
+  return exercises.filter((exercise) => (match?.categories || ["Seated", "Balance", "Breathing"]).includes(exercise.category)).slice(0, 3);
+}
 
 function Profile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-
   const [name, setName] = useState("");
-  const [recoveryGoal, setRecoveryGoal] = useState("");
-  const [preferredCategory, setPreferredCategory] = useState(
-    EXERCISE_CATEGORIES[0],
-  );
+  const [problem, setProblem] = useState("");
+  const [customExerciseId, setCustomExerciseId] = useState("");
+  const [customSets, setCustomSets] = useState(2);
+  const [customReps, setCustomReps] = useState(10);
+  const [customMinutes, setCustomMinutes] = useState(5);
+  const navigate = useNavigate();
+  const recommendations = useMemo(() => suggestedExercises(problem), [problem]);
 
   useEffect(() => {
     const stopAuth = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
-
-      if (!currentUser) {
-        setLoading(false);
-        return;
-      }
-
+      if (!currentUser) { setLoading(false); return; }
       setLoading(true);
-
-      const profileRef = doc(db, "users", currentUser.uid);
-      const profileSnapshot = await getDoc(profileRef);
-      const data = profileSnapshot.exists() ? profileSnapshot.data() : {};
-
-      setName(currentUser.displayName || data.name || "");
-      setRecoveryGoal(data.recoveryGoal || "");
-      setPreferredCategory(data.preferredCategory || EXERCISE_CATEGORIES[0]);
-
-      setLoading(false);
+      try {
+        const snapshot = await getDoc(doc(db, "users", currentUser.uid));
+        const data = snapshot.exists() ? snapshot.data() : {};
+        setName(currentUser.displayName || data.name || "");
+        setProblem(data.recoveryGoal || data.problem || "");
+      } catch {
+        setMessage("Could not load your saved plan details.");
+      } finally { setLoading(false); }
     });
-
     return stopAuth;
   }, []);
 
-  async function handleSave(event) {
-    event.preventDefault();
+  async function saveProblem() {
     if (!user) return;
-
     setSaving(true);
-    setMessage("");
-
     try {
       const trimmedName = name.trim();
-
-      if (trimmedName && trimmedName !== user.displayName) {
-        await updateAuthProfile(user, { displayName: trimmedName });
-      }
-
-      await setDoc(
-        doc(db, "users", user.uid),
-        {
-          name: trimmedName,
-          email: user.email,
-          recoveryGoal: recoveryGoal.trim(),
-          preferredCategory,
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true },
-      );
-
-      setMessage("Profile updated.");
-    } catch {
-      setMessage("Could not save your profile. Please try again.");
-    } finally {
-      setSaving(false);
-    }
+      if (trimmedName && trimmedName !== user.displayName) await updateAuthProfile(user, { displayName: trimmedName });
+      await setDoc(doc(db, "users", user.uid), { name: trimmedName, email: user.email, recoveryGoal: problem.trim(), problem: problem.trim(), updatedAt: serverTimestamp() }, { merge: true });
+      setMessage("Your recovery details are saved.");
+    } catch { setMessage("Could not save your recovery details. Please try again."); } finally { setSaving(false); }
   }
 
-  if (loading) {
-    return <main className="profile-page">Loading your profile...</main>;
+  async function addToPlan(items) {
+    if (!user || !items.length) return;
+    setSaving(true);
+    try {
+      const trackerRef = doc(db, "users", user.uid, "tracker", "main");
+      const snapshot = await getDoc(trackerRef);
+      const currentTasks = snapshot.exists() ? snapshot.data().tasks || [] : [];
+      const additions = items.filter((item) => !currentTasks.some((task) => task.name === item.name));
+      await setDoc(trackerRef, { tasks: [...currentTasks, ...additions], updatedAt: serverTimestamp() }, { merge: true });
+      setMessage(additions.length ? String(additions.length) + " exercise" + (additions.length === 1 ? "" : "s") + " added to your daily plan." : "Those exercises are already in your daily plan.");
+    } catch { setMessage("Could not update your plan. Please try again."); } finally { setSaving(false); }
+  }
+  function addSuggestedPlan() {
+    addToPlan(recommendations.map((exercise) => ({ id: "plan-" + exercise.id + "-" + Date.now(), name: exercise.title, sets: 2, reps: 10, minutes: minutesFromDuration(exercise.duration), completed: false })));
+  }
+  function addCustomExercise() {
+    const exercise = exercises.find((item) => String(item.id) === customExerciseId);
+    if (!exercise) { setMessage("Choose an exercise to add to your custom plan."); return; }
+    addToPlan([{ id: "custom-" + exercise.id + "-" + Date.now(), name: exercise.title, sets: Number(customSets), reps: Number(customReps), minutes: Number(customMinutes), completed: false }]);
   }
 
-  if (!user) {
-    return (
-      <main className="profile-page">
-        <h1>My Profile</h1>
-        <p>Log in to edit your profile.</p>
-        <Link className="profile-login-link" to="/login">
-          Log in
-        </Link>
-      </main>
-    );
-  }
-
+  if (loading) return <main className="profile-page">Loading your plan builder...</main>;
+  if (!user) return <main className="profile-page"><h1>Build your recovery plan</h1><p>Log in to get exercise suggestions and save a custom daily plan.</p><Link className="profile-login-link" to="/login">Log in</Link></main>;
   return (
     <main className="profile-page">
-      <h1>My Profile</h1>
-      <p className="profile-subtitle">
-        Update your details, recovery goal, and preferred exercise category.
-      </p>
-
-      <form className="profile-card" onSubmit={handleSave}>
-        <label>
-          Name
-          <input
-            type="text"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="Your name"
-          />
-        </label>
-
-        <label>
-          Recovery goal
-          <textarea
-            value={recoveryGoal}
-            onChange={(event) => setRecoveryGoal(event.target.value)}
-            placeholder="e.g. Regain full mobility in my left knee within 3 months"
-            rows={4}
-          />
-        </label>
-
-        <label>
-          Preferred exercise category
-          <select
-            value={preferredCategory}
-            onChange={(event) => setPreferredCategory(event.target.value)}
-          >
-            {EXERCISE_CATEGORIES.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        {message && <p className="profile-message">{message}</p>}
-
-        <button type="submit" disabled={saving}>
-          {saving ? "Saving..." : "Save changes"}
-        </button>
-      </form>
+      <header className="profile-header"><p className="profile-kicker">RECOVERY PLAN BUILDER</p><h1>Tell us what’s bothering you.</h1><p>We’ll suggest gentle exercises you can review and add to your daily plan.</p></header>
+      <section className="intake-card">
+        <div className="intake-fields"><label>Your name<input value={name} onChange={(event) => setName(event.target.value)} placeholder="Your name" /></label><label>What would you like help with?<textarea value={problem} onChange={(event) => setProblem(event.target.value)} placeholder="e.g. My knee feels stiff after sitting, and I want to walk more comfortably." rows={5} /></label><p className="safety-note">These are general wellness suggestions, not a medical diagnosis. Stop if pain increases, and contact a clinician for new, severe, or worsening symptoms.</p><button className="save-details" onClick={saveProblem} disabled={saving}>{saving ? "Saving..." : "Save recovery details"}</button></div>
+        <div className="intake-hint"><FaWandMagicSparkles /><strong>Better details, better fit</strong><span>Include the area, what feels difficult, and what you want to get back to doing.</span></div>
+      </section>
+      <section className="recommendations">
+        <div className="profile-section-heading"><div><p className="profile-kicker">YOUR SUGGESTED START</p><h2>{problem.trim() ? "A gentle plan to try" : "Start with a gentle foundation"}</h2></div><button className="add-plan-button" onClick={addSuggestedPlan} disabled={saving || !recommendations.length}><FaPlus /> Add all to my plan</button></div>
+        <div className="suggestion-grid">{recommendations.map((exercise) => <article className="suggestion-card" key={exercise.id}><div><span className="category-label">{exercise.category}</span><h3>{exercise.title}</h3><p>2 sets · 10 reps · {exercise.duration}</p></div><a href={exercise.video} target="_blank" rel="noreferrer">Watch demo <FaArrowRight /></a></article>)}</div>
+      </section>
+      <section className="custom-plan">
+        <div><p className="profile-kicker">MAKE IT YOURS</p><h2>Create a custom exercise</h2><p>Add a library exercise with the sets, reps, and time that feel appropriate for your routine.</p></div>
+        <div className="custom-form"><label>Exercise<select value={customExerciseId} onChange={(event) => { setCustomExerciseId(event.target.value); const selected = exercises.find((item) => String(item.id) === event.target.value); if (selected) setCustomMinutes(minutesFromDuration(selected.duration)); }}><option value="">Choose an exercise</option>{exercises.map((exercise) => <option key={exercise.id} value={exercise.id}>{exercise.title}</option>)}</select></label><label>Sets<input type="number" min="1" max="10" value={customSets} onChange={(event) => setCustomSets(event.target.value)} /></label><label>Reps<input type="number" min="1" max="50" value={customReps} onChange={(event) => setCustomReps(event.target.value)} /></label><label>Minutes<input type="number" min="1" max="90" value={customMinutes} onChange={(event) => setCustomMinutes(event.target.value)} /></label><button onClick={addCustomExercise} disabled={saving}><FaCheck /> Add custom exercise</button></div>
+      </section>
+      {message && <p className="profile-message" role="status">{message} <button onClick={() => navigate("/tracker")}>View daily plan</button></p>}
     </main>
   );
 }
-
 export default Profile;
