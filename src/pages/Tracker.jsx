@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, onSnapshot, serverTimestamp, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
@@ -14,6 +14,7 @@ function Tracker() {
   const [tasks, setTasks] = useState(DEFAULT_TASKS);
   const [newExercise, setNewExercise] = useState("");
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     let stopTrackerListener = () => {};
@@ -71,8 +72,16 @@ function Tracker() {
 
   function addTask() {
     const name = newExercise.trim();
-
     if (!name) return;
+
+    const isDuplicate = tasks.some(
+      (task) => task.name.toLowerCase() === name.toLowerCase(),
+    );
+
+    if (isDuplicate) {
+      setMessage(`"${name}" is already on your list.`);
+      return;
+    }
 
     saveTasks([
       ...tasks,
@@ -84,6 +93,7 @@ function Tracker() {
     ]);
 
     setNewExercise("");
+    setMessage("");
   }
 
   function toggleTask(id) {
@@ -95,8 +105,18 @@ function Tracker() {
   }
 
   function deleteTask(id) {
-    saveTasks(tasks.filter((task) => task.id !== id));
+    const task = tasks.find((t) => t.id === id);
+    if (task && !window.confirm(`Remove "${task.name}" from your tracker?`)) {
+      return;
+    }
+    saveTasks(tasks.filter((t) => t.id !== id));
   }
+
+  // Keep completed items but move them to the bottom so active work stays on top
+  const sortedTasks = useMemo(
+    () => [...tasks].sort((a, b) => Number(a.completed) - Number(b.completed)),
+    [tasks],
+  );
 
   const completedCount = tasks.filter((task) => task.completed).length;
   const progress = tasks.length ? (completedCount / tasks.length) * 100 : 0;
@@ -109,18 +129,26 @@ function Tracker() {
     <main className="tracker-page">
       <h1 className="tracker-title">Progress Tracker</h1>
 
-      <p>
-        {user
-          ? `Your progress is saved to ${user.email}.`
-          : "Guest mode: your progress will reset when you refresh. Log in to save it."}
-      </p>
+      {user ? (
+        <p className="tracker-subtitle">
+          Your progress is saved to {user.email}.
+        </p>
+      ) : (
+        <div className="guest-banner">
+          Guest mode: your progress will reset when you refresh. Log in to save
+          it.
+        </div>
+      )}
 
       <h2>
         Completed: {completedCount} / {tasks.length}
       </h2>
 
-      <div className="progress-container">
-        <div className="progress-fill" style={{ width: `${progress}%` }} />
+      <div className="progress-row">
+        <div className="progress-container">
+          <div className="progress-fill" style={{ width: `${progress}%` }} />
+        </div>
+        <span className="progress-percent">{Math.round(progress)}%</span>
       </div>
 
       <div className="input-section">
@@ -128,35 +156,54 @@ function Tracker() {
           type="text"
           placeholder="Enter exercise name..."
           value={newExercise}
-          onChange={(event) => setNewExercise(event.target.value)}
+          onChange={(event) => {
+            setNewExercise(event.target.value);
+            if (message) setMessage("");
+          }}
           onKeyDown={(event) => {
             if (event.key === "Enter") addTask();
           }}
         />
 
-        <button onClick={addTask}>Add Exercise</button>
+        <button onClick={addTask} disabled={!newExercise.trim()}>
+          Add Exercise
+        </button>
       </div>
 
-      {tasks.map((task) => (
-        <div key={task.id} className="task-card">
-          <h3>{task.name}</h3>
+      {message && <p className="tracker-message">{message}</p>}
 
-          <div className="task-actions">
-            <label>
-              <input
-                type="checkbox"
-                checked={task.completed}
-                onChange={() => toggleTask(task.id)}
-              />
-              Completed
-            </label>
-
-            <button className="delete-btn" onClick={() => deleteTask(task.id)}>
-              Delete
-            </button>
-          </div>
+      {sortedTasks.length === 0 ? (
+        <div className="tracker-empty">
+          No exercises yet — add one above to start tracking.
         </div>
-      ))}
+      ) : (
+        sortedTasks.map((task) => (
+          <div
+            key={task.id}
+            className={`task-card ${task.completed ? "completed" : ""}`}
+          >
+            <h3>{task.name}</h3>
+
+            <div className="task-actions">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={task.completed}
+                  onChange={() => toggleTask(task.id)}
+                />
+                Completed
+              </label>
+
+              <button
+                className="delete-btn"
+                onClick={() => deleteTask(task.id)}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))
+      )}
     </main>
   );
 }
