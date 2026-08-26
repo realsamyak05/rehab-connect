@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { onAuthStateChanged, updateProfile as updateAuthProfile } from "firebase/auth";
 import { doc, getDoc, serverTimestamp, setDoc } from "firebase/firestore";
-import { FaArrowRight, FaCheck, FaPlus, FaWandMagicSparkles } from "react-icons/fa6";
+import { FaArrowRight, FaPlus, FaWandMagicSparkles } from "react-icons/fa6";
 import { auth, db } from "../firebase";
 import exercises from "../data/exercises";
 import "./Profile.css";
@@ -29,10 +29,6 @@ function Profile() {
   const [message, setMessage] = useState("");
   const [name, setName] = useState("");
   const [problem, setProblem] = useState("");
-  const [customExerciseId, setCustomExerciseId] = useState("");
-  const [customSets, setCustomSets] = useState(2);
-  const [customReps, setCustomReps] = useState(10);
-  const [customMinutes, setCustomMinutes] = useState(5);
   const navigate = useNavigate();
   const recommendations = useMemo(() => suggestedExercises(problem), [problem]);
 
@@ -79,12 +75,6 @@ function Profile() {
   function addSuggestedPlan() {
     addToPlan(recommendations.map((exercise) => ({ id: "plan-" + exercise.id + "-" + Date.now(), name: exercise.title, sets: 2, reps: 10, minutes: minutesFromDuration(exercise.duration), completed: false })));
   }
-  function addCustomExercise() {
-    const exercise = exercises.find((item) => String(item.id) === customExerciseId);
-    if (!exercise) { setMessage("Choose an exercise to add to your custom plan."); return; }
-    addToPlan([{ id: "custom-" + exercise.id + "-" + Date.now(), name: exercise.title, sets: Number(customSets), reps: Number(customReps), minutes: Number(customMinutes), completed: false }]);
-  }
-
   if (loading) return <main className="profile-page">Loading your plan builder...</main>;
   if (!user) return <main className="profile-page"><h1>Build your recovery plan</h1><p>Log in to get exercise suggestions and save a custom daily plan.</p><Link className="profile-login-link" to="/login">Log in</Link></main>;
   return (
@@ -97,10 +87,7 @@ function Profile() {
       <section className="recommendations">
         <div className="profile-section-heading"><div><p className="profile-kicker">YOUR SUGGESTED START</p><h2>{problem.trim() ? "A gentle plan to try" : "Start with a gentle foundation"}</h2></div><button className="add-plan-button" onClick={addSuggestedPlan} disabled={saving || !recommendations.length}><FaPlus /> Add all to my plan</button></div>
         <div className="suggestion-grid">{recommendations.map((exercise) => <article className="suggestion-card" key={exercise.id}><div><span className="category-label">{exercise.category}</span><h3>{exercise.title}</h3><p>2 sets · 10 reps · {exercise.duration}</p></div><a href={exercise.video} target="_blank" rel="noreferrer">Watch demo <FaArrowRight /></a></article>)}</div>
-      </section>
-      <section className="custom-plan">
-        <div><p className="profile-kicker">MAKE IT YOURS</p><h2>Create a custom exercise</h2><p>Add a library exercise with the sets, reps, and time that feel appropriate for your routine.</p></div>
-        <div className="custom-form"><label>Exercise<select value={customExerciseId} onChange={(event) => { setCustomExerciseId(event.target.value); const selected = exercises.find((item) => String(item.id) === event.target.value); if (selected) setCustomMinutes(minutesFromDuration(selected.duration)); }}><option value="">Choose an exercise</option>{exercises.map((exercise) => <option key={exercise.id} value={exercise.id}>{exercise.title}</option>)}</select></label><label>Sets<input type="number" min="1" max="10" value={customSets} onChange={(event) => setCustomSets(event.target.value)} /></label><label>Reps<input type="number" min="1" max="50" value={customReps} onChange={(event) => setCustomReps(event.target.value)} /></label><label>Minutes<input type="number" min="1" max="90" value={customMinutes} onChange={(event) => setCustomMinutes(event.target.value)} /></label><button onClick={addCustomExercise} disabled={saving}><FaCheck /> Add custom exercise</button></div>
+        <p className="library-note">Want to add more exercises? Browse the <Link to="/exercises">Exercise Library</Link> to watch demos and add them to your daily plan.</p>
       </section>
       {message && <p className="profile-message" role="status">{message} <button onClick={() => navigate("/tracker")}>View daily plan</button></p>}
     </main>
