@@ -1,6 +1,6 @@
 import "./Centres.css";
 import "leaflet/dist/leaflet.css";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
 
 import { useNavigate } from "react-router-dom";
@@ -16,7 +16,40 @@ import {
 import { auth, db } from "../firebase";
 
 const DEFAULT_POSITION = [26.8467, 80.9462];
-const SEARCH_RADIUS_METRES = 10_000;
+const CACHE_TTL_MS = 5 * 60 * 1_000;
+const centreCache = new Map();
+const locationCache = new Map();
+
+function cacheKey(lat, lng) {
+  return `${lat.toFixed(2)},${lng.toFixed(2)}`;
+}
+
+function formatCentres(elements, label) {
+  return elements
+    .map((place) => {
+      const placeLat = place.lat ?? place.center?.lat;
+      const placeLng = place.lon ?? place.center?.lon;
+      if (placeLat == null || placeLng == null) return null;
+
+      const tags = place.tags ?? {};
+      return {
+        id: `${place.type}-${place.id}`,
+        name: tags.name ?? "Healthcare centre",
+        city: tags["addr:city"] ?? label,
+        type: tags.healthcare ?? tags.amenity ?? "Healthcare",
+        address:
+          (tags["addr:full"] ??
+            [tags["addr:housenumber"], tags["addr:street"]]
+              .filter(Boolean)
+              .join(" ")) ||
+          "Address unavailable",
+        lat: placeLat,
+        lng: placeLng,
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 10);
+}
 
 function RecenterMap({ position }) {
   const map = useMap();
@@ -92,16 +125,28 @@ function Centres() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [searchedPlace, setSearchedPlace] = useState("");
+  const requestId = useRef(0);
+  const hasUserSearch = useRef(false);
 
   const fetchCentres = useCallback(async (lat, lng, label) => {
-    setLoading(true);
+    const currentRequest = ++requestId.current;
+    const key = cacheKey(lat, lng);
+    const cached = centreCache.get(key);
+
     setError("");
-    setCentres([]);
     setMapPosition([lat, lng]);
     setSearchedPlace(label);
 
-    
+    if (cached && Date.now() - cached.createdAt < CACHE_TTL_MS) {
+      setCentres(cached.centres);
+      setLoading(false);
+      if (cached.centres.length === 0) {
+        setError(`No healthcare or rehabilitation centres were found near ${label}.`);
+      }
+      return;
+    }
 
+    setLoading(true);
     try {
       const response = await fetch("/api/centres", {
         method: "POST",
@@ -111,31 +156,10 @@ function Centres() {
       if (!response.ok) throw new Error("Could not load centres");
 
       const data = await response.json();
-      const nearbyCentres = data.elements
-        .map((place) => {
-          const placeLat = place.lat ?? place.center?.lat;
-          const placeLng = place.lon ?? place.center?.lon;
-          if (placeLat == null || placeLng == null) return null;
+      const nearbyCentres = formatCentres(data.elements ?? [], label);
+      centreCache.set(key, { createdAt: Date.now(), centres: nearbyCentres });
 
-          const tags = place.tags ?? {};
-          return {
-            id: `${place.type}-${place.id}`,
-            name: tags.name ?? "Healthcare centre",
-            city: tags["addr:city"] ?? label,
-            type: tags.healthcare ?? tags.amenity ?? "Healthcare",
-            address:
-              (tags["addr:full"] ??
-                [tags["addr:housenumber"], tags["addr:street"]]
-                  .filter(Boolean)
-                  .join(" ")) ||
-              "Address unavailable",
-            lat: placeLat,
-            lng: placeLng,
-          };
-        })
-        .filter(Boolean)
-        .slice(0, 10);
-
+      if (currentRequest !== requestId.current) return;
       setCentres(nearbyCentres);
       if (nearbyCentres.length === 0) {
         setError(
@@ -143,9 +167,10 @@ function Centres() {
         );
       }
     } catch {
+      if (currentRequest !== requestId.current) return;
       setError("Could not fetch centres. Please try again shortly.");
     } finally {
-      setLoading(false);
+      if (currentRequest === requestId.current) setLoading(false);
     }
   }, []);
 
@@ -156,17 +181,32 @@ function Centres() {
     }
     navigator.geolocation.getCurrentPosition(
       ({ coords }) =>
+        !hasUserSearch.current &&
         fetchCentres(coords.latitude, coords.longitude, "your location"),
-      () => setError("Location access was denied. Search for a city instead."),
+      () => {
+        if (!hasUserSearch.current) {
+          setError("Location access was denied. Search for a city instead.");
+        }
+      },
       { enableHighAccuracy: true, timeout: 10_000, maximumAge: 300_000 },
     );
   }, [fetchCentres]);
 
   async function handleSearch(event) {
     event.preventDefault();
+    hasUserSearch.current = true;
+    const lookupRequest = ++requestId.current;
     const place = search.trim();
     if (!place) {
       setError("Enter a city or area to search.");
+      setLoading(false);
+      return;
+    }
+
+    const normalizedPlace = place.toLowerCase();
+    const cachedLocation = locationCache.get(normalizedPlace);
+    if (cachedLocation && Date.now() - cachedLocation.createdAt < CACHE_TTL_MS) {
+      await fetchCentres(cachedLocation.lat, cachedLocation.lng, cachedLocation.label);
       return;
     }
 
@@ -180,21 +220,30 @@ function Centres() {
       if (!response.ok) throw new Error("Location lookup failed");
 
       const locations = await response.json();
+      if (lookupRequest !== requestId.current) return;
       if (!locations.length) {
         setError(`Could not find “${place}”. Try a more specific city name.`);
         return;
       }
 
       const location = locations[0];
+      const result = {
+        createdAt: Date.now(),
+        lat: Number(location.lat),
+        lng: Number(location.lon),
+        label: location.display_name,
+      };
+      locationCache.set(normalizedPlace, result);
       await fetchCentres(
-        Number(location.lat),
-        Number(location.lon),
-        location.display_name,
+        result.lat,
+        result.lng,
+        result.label,
       );
     } catch {
+      if (lookupRequest !== requestId.current) return;
       setError("Could not find that location. Please try again.");
     } finally {
-      setLoading(false);
+      if (lookupRequest === requestId.current) setLoading(false);
     }
   }
 
