@@ -49,7 +49,9 @@ function Marketplace() {
           <div key={product.id} className="product-card">
             <div className="product-image-wrap">
               <img src={product.image} alt={product.name} />
-              <span className="product-category-badge">{product.category}</span>
+              <span className="product-category-badge">
+                {product.category}
+              </span>
             </div>
 
             <div className="product-body">
@@ -57,9 +59,15 @@ function Marketplace() {
               <p className="product-price">
                 ₹{product.price.toLocaleString("en-IN")}
               </p>
-              className="view-product-button" href={product.link}
-              target="_blank" rel="noreferrer"
-              <a>View Product</a>
+
+              
+                className="view-product-button"
+                href={product.link}
+                target="_blank"
+                rel="noreferrer"
+              <a>
+                View Product
+              </a>
             </div>
           </div>
         ))}
