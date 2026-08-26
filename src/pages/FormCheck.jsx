@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import {
+  FaArrowRight,
   FaCamera,
   FaCircleCheck,
   FaCircleExclamation,
@@ -49,6 +50,77 @@ const CHECKS = {
     hint: "Reach to shoulder height",
   },
 };
+
+const DIAGRAMS = {
+  knee: {
+    title: "Knee bend",
+    instruction: "Stand side-on with your hip, knee, and ankle visible.",
+    points: [["Hip", 34, 35], ["Knee", 96, 90], ["Ankle", 154, 38]],
+    path: "M34 35 L96 90 L154 38",
+    arc: "M78 91 A22 22 0 0 1 108 68",
+    angle: "100° target",
+  },
+  squat: {
+    title: "Squat symmetry",
+    instruction: "Face the camera so both knees and ankles stay in view.",
+    points: [["L hip", 48, 28], ["L knee", 76, 86], ["L ankle", 54, 134], ["R hip", 142, 28], ["R knee", 114, 86], ["R ankle", 136, 134]],
+    path: "M48 28 L76 86 L54 134 M142 28 L114 86 L136 134",
+    arc: "M65 91 A17 17 0 0 1 82 72 M108 72 A17 17 0 0 1 125 91",
+    angle: "Compare both sides",
+  },
+  elbow: {
+    title: "Elbow bend",
+    instruction: "Keep your shoulder, elbow, and wrist visible from the side.",
+    points: [["Shoulder", 32, 46], ["Elbow", 96, 90], ["Wrist", 153, 48]],
+    path: "M32 46 L96 90 L153 48",
+    arc: "M78 91 A22 22 0 0 1 108 68",
+    angle: "90° target",
+  },
+  shoulder: {
+    title: "Shoulder lift",
+    instruction: "Show your hip, shoulder, and raised elbow in the frame.",
+    points: [["Hip", 92, 136], ["Shoulder", 92, 78], ["Elbow", 150, 40]],
+    path: "M92 136 L92 78 L150 40",
+    arc: "M92 99 A22 22 0 0 1 113 65",
+    angle: "90° target",
+  },
+  wrist: {
+    title: "Wrist reach",
+    instruction: "Face the camera and keep both shoulders and wrists visible.",
+    points: [["L shoulder", 48, 54], ["L wrist", 48, 105], ["R shoulder", 142, 54], ["R wrist", 142, 105]],
+    path: "M48 54 L48 105 M142 54 L142 105",
+    angle: "Shoulder-height reach",
+  },
+};
+
+function JointDiagram({ assessment, value }) {
+  const diagram = DIAGRAMS[assessment];
+  const displayValue = Number.isFinite(value) ? Math.round(value) + "°" : diagram.angle;
+
+  return (
+    <aside className="joint-diagram" aria-label={diagram.title + " positioning guide"}>
+      <div className="diagram-heading">
+        <div>
+          <p className="form-kicker">POSITIONING GUIDE</p>
+          <h2>{diagram.title}</h2>
+        </div>
+        <strong>{displayValue}</strong>
+      </div>
+      <svg viewBox="0 0 190 160" role="img" aria-label={diagram.instruction}>
+        <path className="diagram-limb" d={diagram.path} />
+        {diagram.arc && <path className="diagram-arc" d={diagram.arc} />}
+        {assessment === "wrist" && <path className="diagram-guide" d="M25 55 H165" />}
+        {diagram.points.map(([label, x, y]) => (
+          <g key={label}>
+            <circle className="diagram-point" cx={x} cy={y} r="5" />
+            <text x={x} y={y - 11}>{label}</text>
+          </g>
+        ))}
+      </svg>
+      <p>{diagram.instruction}</p>
+    </aside>
+  );
+}
 
 /*
  * Calculates the angle at `vertex`.
@@ -535,6 +607,8 @@ function FormCheck() {
 
   const [result, setResult] = useState(null);
 
+  const [savingAngle, setSavingAngle] = useState(false);
+
   const [message, setMessage] = useState("");
 
   /*
@@ -663,6 +737,48 @@ function FormCheck() {
       setMessage("Session complete and result saved to your recovery record.");
     } catch {
       setMessage("Session complete, but the result could not be saved.");
+    }
+  }
+
+  /*
+   * Adds the live joint measurement to the check-in stream used by the
+   * dashboard's range-of-motion card and four-week timeline.
+   */
+  async function addAngleToDashboard() {
+    if (!result || !Number.isFinite(result.value)) return;
+
+    if (!user) {
+      setMessage("Log in to add this angle to your recovery dashboard.");
+      return;
+    }
+
+    setSavingAngle(true);
+    try {
+      await setDoc(
+        doc(db, "users", user.uid, "tracker", "main"),
+        {
+          checkIns: arrayUnion({
+            date: new Date().toISOString().slice(0, 10),
+            rangeOfMotion: Math.round(result.value),
+            source: "form-check",
+            movement: CHECKS[assessment].label,
+            side: result.side || null,
+            recordedOn: new Date().toISOString(),
+          }),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+      setMessage(
+        Math.round(result.value) +
+          "° added to your dashboard as " +
+          CHECKS[assessment].label.toLowerCase() +
+          ".",
+      );
+    } catch {
+      setMessage("We could not add that angle to the dashboard. Please try again.");
+    } finally {
+      setSavingAngle(false);
     }
   }
 
@@ -1017,6 +1133,8 @@ function FormCheck() {
             </select>
           </label>
 
+          <JointDiagram assessment={assessment} value={result?.value} />
+
           <label className="assessment-select">
             Reps to record
             <input
@@ -1106,6 +1224,15 @@ function FormCheck() {
                   }}
                 />
               </div>
+
+              <button
+                className="dashboard-angle-button"
+                onClick={addAngleToDashboard}
+                disabled={savingAngle}
+              >
+                {savingAngle ? "Adding to dashboard..." : "Add angle to dashboard"}
+                {!savingAngle && <FaArrowRight />}
+              </button>
             </div>
           </>
         ) : (

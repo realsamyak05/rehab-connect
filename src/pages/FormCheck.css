@@ -104,6 +104,52 @@
 .assessment-panel {
   padding: 27px;
 }
+.joint-diagram {
+  margin: 18px 0;
+  padding: 15px;
+  border: 1px solid #e5e1f6;
+  border-radius: 13px;
+  background: linear-gradient(145deg, #faf9ff, #f4f1ff);
+}
+.diagram-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.diagram-heading h2 {
+  margin: 0;
+  color: #36334e;
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+.diagram-heading strong {
+  padding: 5px 8px;
+  border-radius: 7px;
+  color: #5a48ad;
+  background: #e9e3ff;
+  font-size: .72rem;
+  white-space: nowrap;
+}
+.joint-diagram svg {
+  display: block;
+  width: 100%;
+  max-height: 146px;
+  margin: 7px auto 0;
+}
+.diagram-limb,
+.diagram-arc,
+.diagram-guide {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.diagram-limb { stroke: #6756c5; stroke-width: 8; }
+.diagram-arc { stroke: #d89d47; stroke-width: 3; }
+.diagram-guide { stroke: #b7addf; stroke-width: 2; stroke-dasharray: 5 5; }
+.diagram-point { fill: #fff; stroke: #6756c5; stroke-width: 3; }
+.joint-diagram text { fill: #73708a; font-size: 10px; font-weight: 700; text-anchor: middle; }
+.joint-diagram > p { margin: 0; color: #706d83; font-size: .77rem; line-height: 1.4; }
 .assessment-select {
   display: grid;
   gap: 7px;
@@ -228,6 +274,22 @@
   background: linear-gradient(90deg, #7160d3, #9a85ed);
   transition: width 0.3s;
 }
+.dashboard-angle-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  background: #5f4eb5;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+.dashboard-angle-button:disabled { opacity: .7; cursor: wait; }
 .form-privacy {
   margin-top: 14px;
   color: #858798;
