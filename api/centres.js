@@ -33,14 +33,16 @@ async function getCentres(lat, lng) {
     },
     body: `data=${encodeURIComponent(query)}`,
   }).then(async (response) => {
-    if (!response.ok) throw new Error(`Overpass responded with ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`Overpass responded with ${response.status}`);
+    }
 
     const data = await response.json();
     centreCache.set(key, { createdAt: Date.now(), data });
     return data;
   });
 
-  // Share an in-flight lookup when several visitors search the same area.
+  // Multiple searches for the same nearby area use one network request.
   centreCache.set(key, { createdAt: Date.now(), data: request });
 
   try {
@@ -79,7 +81,10 @@ export default async function handler(req, res) {
 
   try {
     const data = await getCentres(lat, lng);
-    res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=60");
+    res.setHeader(
+      "Cache-Control",
+      "public, s-maxage=300, stale-while-revalidate=60",
+    );
     return res.status(200).json(data);
   } catch (error) {
     console.error("Centre search error:", error);

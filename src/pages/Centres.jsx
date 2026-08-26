@@ -2,7 +2,6 @@ import "./Centres.css";
 import "leaflet/dist/leaflet.css";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMap } from "react-leaflet";
-
 import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 import {
@@ -29,9 +28,11 @@ function formatCentres(elements, label) {
     .map((place) => {
       const placeLat = place.lat ?? place.center?.lat;
       const placeLng = place.lon ?? place.center?.lon;
+
       if (placeLat == null || placeLng == null) return null;
 
       const tags = place.tags ?? {};
+
       return {
         id: `${place.type}-${place.id}`,
         name: tags.name ?? "Healthcare centre",
@@ -53,16 +54,27 @@ function formatCentres(elements, label) {
 
 function RecenterMap({ position }) {
   const map = useMap();
+
   useEffect(() => {
     map.setView(position, 11);
   }, [map, position]);
+
   return null;
 }
 
 function Centres() {
   const [user, setUser] = useState(null);
   const [savedCentreIds, setSavedCentreIds] = useState([]);
+  const [search, setSearch] = useState("");
+  const [centres, setCentres] = useState([]);
+  const [mapPosition, setMapPosition] = useState(DEFAULT_POSITION);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [searchedPlace, setSearchedPlace] = useState("");
+
   const navigate = useNavigate();
+  const requestId = useRef(0);
+  const hasUserSearch = useRef(false);
 
   useEffect(() => {
     let stopSavedCentres = () => {};
@@ -119,14 +131,6 @@ function Centres() {
       savedAt: serverTimestamp(),
     });
   }
-  const [search, setSearch] = useState("");
-  const [centres, setCentres] = useState([]);
-  const [mapPosition, setMapPosition] = useState(DEFAULT_POSITION);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [searchedPlace, setSearchedPlace] = useState("");
-  const requestId = useRef(0);
-  const hasUserSearch = useRef(false);
 
   const fetchCentres = useCallback(async (lat, lng, label) => {
     const currentRequest = ++requestId.current;
@@ -140,27 +144,39 @@ function Centres() {
     if (cached && Date.now() - cached.createdAt < CACHE_TTL_MS) {
       setCentres(cached.centres);
       setLoading(false);
+
       if (cached.centres.length === 0) {
-        setError(`No healthcare or rehabilitation centres were found near ${label}.`);
+        setError(
+          `No healthcare or rehabilitation centres were found near ${label}.`,
+        );
       }
+
       return;
     }
 
     setLoading(true);
+
     try {
       const response = await fetch("/api/centres", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lat, lng }),
       });
+
       if (!response.ok) throw new Error("Could not load centres");
 
       const data = await response.json();
       const nearbyCentres = formatCentres(data.elements ?? [], label);
-      centreCache.set(key, { createdAt: Date.now(), centres: nearbyCentres });
+
+      centreCache.set(key, {
+        createdAt: Date.now(),
+        centres: nearbyCentres,
+      });
 
       if (currentRequest !== requestId.current) return;
+
       setCentres(nearbyCentres);
+
       if (nearbyCentres.length === 0) {
         setError(
           `No healthcare or rehabilitation centres were found near ${label}.`,
@@ -170,7 +186,9 @@ function Centres() {
       if (currentRequest !== requestId.current) return;
       setError("Could not fetch centres. Please try again shortly.");
     } finally {
-      if (currentRequest === requestId.current) setLoading(false);
+      if (currentRequest === requestId.current) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -179,24 +197,33 @@ function Centres() {
       setError("Geolocation is not supported. Search for a city instead.");
       return;
     }
+
     navigator.geolocation.getCurrentPosition(
-      ({ coords }) =>
-        !hasUserSearch.current &&
-        fetchCentres(coords.latitude, coords.longitude, "your location"),
+      ({ coords }) => {
+        if (!hasUserSearch.current) {
+          fetchCentres(coords.latitude, coords.longitude, "your location");
+        }
+      },
       () => {
         if (!hasUserSearch.current) {
           setError("Location access was denied. Search for a city instead.");
         }
       },
-      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 300_000 },
+      {
+        enableHighAccuracy: true,
+        timeout: 10_000,
+        maximumAge: 300_000,
+      },
     );
   }, [fetchCentres]);
 
   async function handleSearch(event) {
     event.preventDefault();
+
     hasUserSearch.current = true;
     const lookupRequest = ++requestId.current;
     const place = search.trim();
+
     if (!place) {
       setError("Enter a city or area to search.");
       setLoading(false);
@@ -205,22 +232,34 @@ function Centres() {
 
     const normalizedPlace = place.toLowerCase();
     const cachedLocation = locationCache.get(normalizedPlace);
-    if (cachedLocation && Date.now() - cachedLocation.createdAt < CACHE_TTL_MS) {
-      await fetchCentres(cachedLocation.lat, cachedLocation.lng, cachedLocation.label);
+
+    if (
+      cachedLocation &&
+      Date.now() - cachedLocation.createdAt < CACHE_TTL_MS
+    ) {
+      await fetchCentres(
+        cachedLocation.lat,
+        cachedLocation.lng,
+        cachedLocation.label,
+      );
       return;
     }
 
     setLoading(true);
     setError("");
+
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(place)}`,
         { headers: { Accept: "application/json" } },
       );
+
       if (!response.ok) throw new Error("Location lookup failed");
 
       const locations = await response.json();
+
       if (lookupRequest !== requestId.current) return;
+
       if (!locations.length) {
         setError(`Could not find “${place}”. Try a more specific city name.`);
         return;
@@ -233,17 +272,17 @@ function Centres() {
         lng: Number(location.lon),
         label: location.display_name,
       };
+
       locationCache.set(normalizedPlace, result);
-      await fetchCentres(
-        result.lat,
-        result.lng,
-        result.label,
-      );
+
+      await fetchCentres(result.lat, result.lng, result.label);
     } catch {
       if (lookupRequest !== requestId.current) return;
       setError("Could not find that location. Please try again.");
     } finally {
-      if (lookupRequest === requestId.current) setLoading(false);
+      if (lookupRequest === requestId.current) {
+        setLoading(false);
+      }
     }
   }
 
@@ -256,6 +295,7 @@ function Centres() {
   return (
     <div className="centres-page">
       <h1>Find Rehabilitation Centres</h1>
+
       <form onSubmit={handleSearch}>
         <input
           className="search-box"
@@ -284,10 +324,12 @@ function Centres() {
         }}
       >
         <RecenterMap position={mapPosition} />
+
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
         {centres.map((centre) => (
           <Marker key={centre.id} position={[centre.lat, centre.lng]}>
             <Popup>
@@ -303,6 +345,7 @@ function Centres() {
         {centres.map((centre) => (
           <article key={centre.id} className="centre-card">
             <h2>{centre.name}</h2>
+
             <p>
               <strong>City:</strong> {centre.city}
             </p>
@@ -312,6 +355,7 @@ function Centres() {
             <p>
               <strong>Address:</strong> {centre.address}
             </p>
+
             <a
               href={`https://www.google.com/maps?q=${centre.lat},${centre.lng}`}
               target="_blank"
