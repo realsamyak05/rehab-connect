@@ -1,8 +1,26 @@
+.exercises-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 32px 60px;
+}
+
+.exercises-page h1 {
+  margin: 0 0 8px;
+}
+
+.exercise-note {
+  color: #5b4752;
+  max-width: 65ch;
+}
+
+/* Category filter bar */
 .category-filter {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 20px;
+  margin: 24px 0 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #eadfe6;
 }
 
 .category-chip {
@@ -14,10 +32,12 @@
   font: inherit;
   font-size: 0.9rem;
   cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
 }
 
 .category-chip:hover {
   border-color: #7a0d6b;
+  color: #7a0d6b;
 }
 
 .category-chip.active {
@@ -30,4 +50,95 @@
   opacity: 0.7;
   font-size: 0.8em;
   margin-left: 4px;
+}
+
+.exercise-message {
+  margin: 0 0 24px;
+  color: #7a0d6b;
+  font-weight: 600;
+}
+
+/* Card grid */
+.exercises-page .exercise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.exercises-page .exercise-card {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border: 1px solid #ece3e8;
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 1px 3px rgba(30, 12, 26, 0.06);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.exercises-page .exercise-card:hover {
+  box-shadow: 0 8px 20px rgba(30, 12, 26, 0.1);
+  transform: translateY(-2px);
+}
+
+.exercise-card h2 {
+  margin: 0 0 12px;
+  font-size: 1.15rem;
+}
+
+.exercise-card p {
+  margin: 0 0 6px;
+  font-size: 0.92rem;
+  color: #3f3339;
+}
+
+.exercise-card a {
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: 14px;
+  text-decoration: none;
+  color: white;
+  background: #2563eb;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: background 0.15s ease;
+}
+
+.exercise-card a:hover {
+  background: #1d4ed8;
+}
+
+.add-tracker-button {
+  margin-top: 10px;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #7a0d6b;
+  color: white;
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background 0.15s ease;
+}
+
+.add-tracker-button:hover:not(:disabled) {
+  background: #630a56;
+}
+
+.add-tracker-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.add-tracker-button.added {
+  background: #22c55e;
+  cursor: default;
+}
+
+@media (max-width: 640px) {
+  .exercises-page {
+    padding: 24px 16px 40px;
+  }
 }
