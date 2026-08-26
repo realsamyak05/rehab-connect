@@ -1,7 +1,7 @@
 .navbar {
   padding: 18px 40px;
-  background: #eab0c1;
-  color: #2d1b24;
+  background: #ded8fb;
+  color: #292a39;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -29,7 +29,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #7a0d6b;
+  color: #5f4eb5;
   font: inherit;
 }
 
@@ -38,19 +38,19 @@
 }
 
 .nav-links a:hover {
-  color: #d98aa2;
+  color: #7b6dcc;
 }
 
 .logout-button {
   padding: 8px 12px;
-  border: 1px solid #7a0d6b;
+  border: 1px solid #5f4eb5;
   border-radius: 8px;
   background: transparent;
   cursor: pointer;
 }
 
 .logout-button:hover {
-  background: #f8d7e1;
+  background: #eeeaff;
 }
 
 .menu-toggle {
@@ -58,7 +58,7 @@
   padding: 8px;
   border: 0;
   background: transparent;
-  color: #7a0d6b;
+  color: #5f4eb5;
   font-size: 24px;
   cursor: pointer;
 }
@@ -103,7 +103,7 @@
 
   .nav-links a:hover,
   .logout-button:hover {
-    background: #f8d7e1;
+    background: #eeeaff;
   }
 
   .logout-button {

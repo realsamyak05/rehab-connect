@@ -64,7 +64,7 @@
 
   text-align: center;
 
-  background: linear-gradient(135deg, #f8d7e1, #ffffff);
+  background: linear-gradient(135deg, #eeeaff, #ffffff);
 
   border-radius: 20px;
 }
@@ -75,7 +75,7 @@
 
 .hero h1 {
   font-size: 72px;
-  color: #7a0d6b;
+  color: #5f4eb5;
 }
 
 .hero p {
@@ -91,8 +91,8 @@
   border: none;
   border-radius: 12px;
 
-  background: #eab0c1;
-  color: #2d1b24;
+  background: #5f4eb5;
+  color: #ffffff;
 
   cursor: pointer;
 }
@@ -120,6 +120,6 @@
 }
 
 .stat-card h2 {
-  color: #7a0d6b;
+  color: #5f4eb5;
   font-size: 40px;
 }

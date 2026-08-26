@@ -7,7 +7,7 @@
   padding: 12px;
   width: min(300px, 100%);
   font-size: 16px;
-  border: 1px solid #ccc;
+  border: 1px solid #d9d9e6;
   border-radius: 8px;
 }
 
@@ -17,14 +17,14 @@
   padding: 12px 20px;
   font-size: 16px;
   color: #fff;
-  background: #2563eb;
+  background: #5f4eb5;
   border: 0;
   border-radius: 8px;
   cursor: pointer;
 }
 
 .search-button:hover:not(:disabled) {
-  background: #1d4ed8;
+  background: #4e419a;
 }
 
 .search-button:disabled {
@@ -34,13 +34,13 @@
 
 .location-search-button {
   margin-left: 8px;
-  color: #1d4ed8;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  color: #4e419a;
+  background: #f0edff;
+  border: 1px solid #d9d0ff;
 }
 
 .location-search-button:hover:not(:disabled) {
-  background: #dbeafe;
+  background: #eeeaff;
 }
 
 .location-search-button:disabled {
@@ -56,7 +56,7 @@
 }
 
 .centre-card {
-  border: 1px solid #ddd;
+  border: 1px solid #e6e7ef;
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -91,14 +91,14 @@
   display: block;
   margin-top: 14px;
   padding: 10px 14px;
-  border: 1px solid #7a0d6b;
+  border: 1px solid #5f4eb5;
   border-radius: 8px;
   background: white;
-  color: #7a0d6b;
+  color: #5f4eb5;
   font: inherit;
   cursor: pointer;
 }
 
 .save-centre-button:hover {
-  background: #f8d7e1;
+  background: #eeeaff;
 }

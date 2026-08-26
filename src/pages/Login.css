@@ -3,7 +3,7 @@
   display: grid;
   place-items: center;
   padding: 40px 20px;
-  background: linear-gradient(135deg, #f8d7e1, #fff);
+  background: linear-gradient(135deg, #eeeaff, #fff);
 }
 
 .login-card {
@@ -15,12 +15,12 @@
 }
 
 .login-card h1 {
-  color: #7a0d6b;
+  color: #5f4eb5;
   margin-bottom: 10px;
 }
 
 .login-card > p {
-  color: #5b4752;
+  color: #6f7285;
   line-height: 1.5;
 }
 
@@ -28,7 +28,7 @@
   width: 100%;
   margin-top: 16px;
   padding: 13px;
-  border: 1px solid #eab0c1;
+  border: 1px solid #ded8fb;
   border-radius: 10px;
   font: inherit;
 }
@@ -39,7 +39,7 @@
   padding: 13px;
   border: 0;
   border-radius: 10px;
-  background: #7a0d6b;
+  background: #5f4eb5;
   color: white;
   font: inherit;
   cursor: pointer;
@@ -63,7 +63,7 @@
 .switch-auth button {
   border: 0;
   background: transparent;
-  color: #7a0d6b;
+  color: #5f4eb5;
   font: inherit;
   font-weight: bold;
   cursor: pointer;

@@ -21,7 +21,7 @@
 .login-to-save {
   display: inline-block;
   margin-top: 12px;
-  color: #7a0d6b;
+  color: #5f4eb5;
   font-weight: bold;
 }
 
@@ -31,7 +31,7 @@
   padding: 9px 14px;
   border: 0;
   border-radius: 8px;
-  background: #ef4444;
+  background: #c65757;
   color: white;
   cursor: pointer;
 }

@@ -2,44 +2,44 @@
     min-height: 70vh;
     padding: 40px;
   }
-  
+
   .assistant-form {
     display: flex;
     gap: 10px;
     max-width: 700px;
     margin-top: 20px;
   }
-  
+
   .assistant-input {
     flex: 1;
     min-width: 0;
     padding: 12px;
-    border: 1px solid #ccc;
+    border: 1px solid #d9d9e6;
     border-radius: 8px;
     font: inherit;
   }
-  
+
   .assistant-button {
     padding: 12px 20px;
     border: 0;
     border-radius: 8px;
-    background: #7a0d6b;
+    background: #5f4eb5;
     color: white;
     font: inherit;
     cursor: pointer;
   }
-  
+
   .assistant-answer {
     max-width: 850px;
     margin-top: 30px;
     padding: 20px;
-    border: 1px solid #ccc;
+    border: 1px solid #d9d9e6;
     border-radius: 10px;
     background: white;
   }
-  
+
 .assistant-markdown {
-  color: #25202a;
+  color: #353547;
   line-height: 1.7;
 }
 
@@ -54,7 +54,7 @@
 .assistant-markdown h1,
 .assistant-markdown h2,
 .assistant-markdown h3 {
-  color: #4e0b46;
+  color: #292a39;
   line-height: 1.25;
   margin: 1.4rem 0 0.6rem;
 }
@@ -86,7 +86,7 @@
 
 .assistant-markdown hr {
   border: 0;
-  border-top: 1px solid #e5d9e4;
+  border-top: 1px solid #e6e7ef;
   margin: 1.25rem 0;
 }
 
@@ -104,38 +104,38 @@
 
 .assistant-table th,
 .assistant-table td {
-  border: 1px solid #e2d8e1;
+  border: 1px solid #e6e7ef;
   padding: 0.75rem;
   text-align: left;
   vertical-align: top;
 }
 
 .assistant-table th {
-  background: #f8eef7;
-  color: #4e0b46;
+  background: #f8f7ff;
+  color: #292a39;
 }
 
 .assistant-table tbody tr:nth-child(even) {
-  background: #fcf9fc;
+  background: #fafaff;
 }
-  
+
   @media (max-width: 700px) {
     .assistant-page {
       padding: 24px 16px;
     }
-  
+
     .assistant-page h1 {
       font-size: 28px;
     }
-  
+
     .assistant-form {
       flex-direction: column;
     }
-  
+
     .assistant-button {
       width: 100%;
     }
-  
+
     .assistant-answer {
       padding: 16px;
     }
