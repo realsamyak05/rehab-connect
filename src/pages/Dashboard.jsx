@@ -10,15 +10,20 @@ function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [savedCentresCount, setSavedCentresCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [retryAttempt, setRetryAttempt] = useState(0);
 
   useEffect(() => {
     let stopTracker = () => {};
     let stopSavedCentres = () => {};
+    setLoading(true);
+    setLoadError("");
 
     const stopAuth = onAuthStateChanged(auth, (currentUser) => {
       stopTracker();
       stopSavedCentres();
       setUser(currentUser);
+      setLoadError("");
 
       if (!currentUser) {
         setTasks([]);
@@ -36,6 +41,14 @@ function Dashboard() {
         }
       }
 
+      function handleFirestoreError(error) {
+        console.error("Dashboard Firestore error:", error);
+        setLoadError(
+          "We could not load your dashboard data. Check your internet connection and try again.",
+        );
+        setLoading(false);
+      }
+
       stopTracker = onSnapshot(
         doc(db, "users", currentUser.uid, "tracker", "main"),
         (snapshot) => {
@@ -43,6 +56,7 @@ function Dashboard() {
           trackerReady = true;
           finishLoading();
         },
+        handleFirestoreError,
       );
 
       stopSavedCentres = onSnapshot(
@@ -52,6 +66,7 @@ function Dashboard() {
           centresReady = true;
           finishLoading();
         },
+        handleFirestoreError,
       );
     });
 
@@ -60,7 +75,7 @@ function Dashboard() {
       stopTracker();
       stopSavedCentres();
     };
-  }, []);
+  }, [retryAttempt]);
 
   if (loading) {
     return <main className="dashboard-page">Loading dashboard...</main>;
@@ -74,6 +89,21 @@ function Dashboard() {
         <Link className="dashboard-button" to="/login">
           Log in
         </Link>
+      </main>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <main className="dashboard-page">
+        <h1>My Dashboard</h1>
+        <p role="alert">{loadError}</p>
+        <button
+          className="dashboard-button"
+          onClick={() => setRetryAttempt((attempt) => attempt + 1)}
+        >
+          Try again
+        </button>
       </main>
     );
   }

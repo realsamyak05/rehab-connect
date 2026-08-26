@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 import { getFunctions } from "firebase/functions";
 // add next to your existing auth/db exports
 
@@ -17,4 +17,8 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 export const functions = getFunctions(app);
-export const db = getFirestore(app);
+// Some networks and browser privacy tools block Firestore's default streaming
+// transport. Long polling is slower but substantially more reliable there.
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+});
