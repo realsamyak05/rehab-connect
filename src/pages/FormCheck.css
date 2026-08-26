@@ -48,7 +48,8 @@
 }
 .form-workspace {
   display: grid;
-  grid-template-columns: 1.25fr 0.75fr;
+  grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.85fr);
+  align-items: start;
   margin-top: 20px;
   overflow: hidden;
   border-radius: 20px;
@@ -58,14 +59,17 @@
 }
 .camera-panel {
   position: relative;
-  min-height: 380px;
+  width: 100%;
+  min-height: 0;
+  aspect-ratio: 16 / 11;
   overflow: hidden;
   background: #28283c;
 }
 .camera-feed {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  min-height: 380px;
   object-fit: cover;
   transform: scaleX(-1);
 }
@@ -105,11 +109,13 @@
   padding: 27px;
 }
 .joint-diagram {
-  margin: 18px 0;
-  padding: 15px;
-  border: 1px solid #e5e1f6;
-  border-radius: 13px;
-  background: linear-gradient(145deg, #faf9ff, #f4f1ff);
+  position: relative;
+  margin: 17px 0;
+  padding: 14px;
+  overflow: hidden;
+  border: 1px solid #e2ddf3;
+  border-radius: 14px;
+  background: #faf9ff;
 }
 .diagram-heading {
   display: flex;
@@ -131,24 +137,39 @@
   font-size: .72rem;
   white-space: nowrap;
 }
+.diagram-view {
+  display: block;
+  margin-top: 8px;
+  color: #8a849f;
+  font-size: .64rem;
+  font-weight: 850;
+  letter-spacing: .11em;
+}
 .joint-diagram svg {
   display: block;
   width: 100%;
-  max-height: 146px;
-  margin: 7px auto 0;
+  height: auto;
+  max-height: 175px;
+  margin: 4px auto 2px;
 }
-.diagram-limb,
-.diagram-arc,
-.diagram-guide {
+.diagram-stage { fill: #f0edff; }
+.diagram-floor { fill: none; stroke: #d9d3eb; stroke-width: 2; stroke-linecap: round; }
+.body-head { fill: #ded7fb; stroke: #6a59c5; stroke-width: 3; }
+.body-line,
+.angle-arc,
+.reach-guide {
   fill: none;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-.diagram-limb { stroke: #6756c5; stroke-width: 8; }
-.diagram-arc { stroke: #d89d47; stroke-width: 3; }
-.diagram-guide { stroke: #b7addf; stroke-width: 2; stroke-dasharray: 5 5; }
-.diagram-point { fill: #fff; stroke: #6756c5; stroke-width: 3; }
-.joint-diagram text { fill: #73708a; font-size: 10px; font-weight: 700; text-anchor: middle; }
+.body-line { stroke: #7a6bc9; stroke-width: 9; }
+.body-line.muted { stroke: #bdb4e3; }
+.body-line.highlight { stroke: #5b47bd; }
+.joint-focus { fill: #f1a94b; stroke: #fff; stroke-width: 4; }
+.angle-arc { stroke: #e39b3e; stroke-width: 3; }
+.reach-guide { stroke: #d98b3c; stroke-width: 2; stroke-dasharray: 5 4; }
+.angle-label { fill: #a5621f; font-size: 10px; font-weight: 850; text-anchor: middle; }
+.diagram-callout { fill: #5b5290; font-size: 10px; font-weight: 850; text-anchor: middle; }
 .joint-diagram > p { margin: 0; color: #706d83; font-size: .77rem; line-height: 1.4; }
 .assessment-select {
   display: grid;
@@ -314,7 +335,7 @@
   }
   .camera-panel,
   .camera-feed {
-    min-height: 270px;
+    min-height: 0;
   }
   .assessment-result {
     align-items: flex-start;

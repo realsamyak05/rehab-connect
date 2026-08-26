@@ -55,43 +55,44 @@ const DIAGRAMS = {
   knee: {
     title: "Knee bend",
     instruction: "Stand side-on with your hip, knee, and ankle visible.",
-    points: [["Hip", 34, 35], ["Knee", 96, 90], ["Ankle", 154, 38]],
-    path: "M34 35 L96 90 L154 38",
-    arc: "M78 91 A22 22 0 0 1 108 68",
     angle: "100° target",
+    view: "SIDE VIEW",
   },
   squat: {
     title: "Squat symmetry",
     instruction: "Face the camera so both knees and ankles stay in view.",
-    points: [["L hip", 48, 28], ["L knee", 76, 86], ["L ankle", 54, 134], ["R hip", 142, 28], ["R knee", 114, 86], ["R ankle", 136, 134]],
-    path: "M48 28 L76 86 L54 134 M142 28 L114 86 L136 134",
-    arc: "M65 91 A17 17 0 0 1 82 72 M108 72 A17 17 0 0 1 125 91",
     angle: "Compare both sides",
+    view: "FRONT VIEW",
   },
   elbow: {
     title: "Elbow bend",
     instruction: "Keep your shoulder, elbow, and wrist visible from the side.",
-    points: [["Shoulder", 32, 46], ["Elbow", 96, 90], ["Wrist", 153, 48]],
-    path: "M32 46 L96 90 L153 48",
-    arc: "M78 91 A22 22 0 0 1 108 68",
     angle: "90° target",
+    view: "SIDE VIEW",
   },
   shoulder: {
     title: "Shoulder lift",
     instruction: "Show your hip, shoulder, and raised elbow in the frame.",
-    points: [["Hip", 92, 136], ["Shoulder", 92, 78], ["Elbow", 150, 40]],
-    path: "M92 136 L92 78 L150 40",
-    arc: "M92 99 A22 22 0 0 1 113 65",
     angle: "90° target",
+    view: "SIDE VIEW",
   },
   wrist: {
     title: "Wrist reach",
     instruction: "Face the camera and keep both shoulders and wrists visible.",
-    points: [["L shoulder", 48, 54], ["L wrist", 48, 105], ["R shoulder", 142, 54], ["R wrist", 142, 105]],
-    path: "M48 54 L48 105 M142 54 L142 105",
     angle: "Shoulder-height reach",
+    view: "FRONT VIEW",
   },
 };
+
+function MotionIllustration({ assessment }) {
+  const common = <><rect className="diagram-stage" x="1" y="1" width="238" height="158" rx="12" /><path className="diagram-floor" d="M22 142 H218" /></>;
+
+  if (assessment === "knee") return <svg viewBox="0 0 240 160" role="img" aria-label="Side view knee bend guide">{common}<circle className="body-head" cx="72" cy="25" r="13" /><path className="body-line" d="M72 39 L78 76 L112 101" /><path className="body-line muted" d="M78 76 L51 100" /><path className="body-line highlight" d="M112 101 L158 126" /><circle className="joint-focus" cx="112" cy="101" r="8" /><path className="angle-arc" d="M96 102 A20 20 0 0 1 123 89" /><text className="angle-label" x="134" y="92">angle</text><text className="diagram-callout" x="112" y="121">Knee</text></svg>;
+  if (assessment === "squat") return <svg viewBox="0 0 240 160" role="img" aria-label="Front view squat symmetry guide">{common}<circle className="body-head" cx="120" cy="23" r="13" /><path className="body-line" d="M120 37 L120 75 M84 51 L120 48 L156 51" /><path className="body-line highlight" d="M120 75 L88 105 L73 136 M120 75 L152 105 L167 136" /><circle className="joint-focus" cx="88" cy="105" r="7" /><circle className="joint-focus" cx="152" cy="105" r="7" /><path className="angle-arc" d="M76 107 A17 17 0 0 1 95 92 M145 92 A17 17 0 0 1 164 107" /><text className="diagram-callout" x="70" y="91">L</text><text className="diagram-callout" x="170" y="91">R</text></svg>;
+  if (assessment === "elbow") return <svg viewBox="0 0 240 160" role="img" aria-label="Side view elbow bend guide">{common}<circle className="body-head" cx="78" cy="25" r="13" /><path className="body-line" d="M78 39 L82 112 M82 62 L121 80" /><path className="body-line highlight" d="M121 80 L161 51" /><circle className="joint-focus" cx="121" cy="80" r="8" /><path className="angle-arc" d="M106 79 A19 19 0 0 1 130 64" /><text className="angle-label" x="143" y="66">angle</text><text className="diagram-callout" x="122" y="102">Elbow</text></svg>;
+  if (assessment === "shoulder") return <svg viewBox="0 0 240 160" role="img" aria-label="Side view shoulder lift guide">{common}<circle className="body-head" cx="89" cy="25" r="13" /><path className="body-line" d="M89 39 L89 116 M89 66 L119 66" /><path className="body-line highlight" d="M119 66 L119 22" /><circle className="joint-focus" cx="119" cy="66" r="8" /><path className="angle-arc" d="M101 66 A19 19 0 0 1 119 47" /><text className="angle-label" x="137" y="50">90°</text><text className="diagram-callout" x="121" y="91">Shoulder</text></svg>;
+  return <svg viewBox="0 0 240 160" role="img" aria-label="Front view wrist reach guide">{common}<circle className="body-head" cx="120" cy="25" r="13" /><path className="body-line" d="M120 39 L120 118 M120 61 L82 61 M120 61 L158 61" /><path className="body-line highlight" d="M82 61 L59 61 M158 61 L181 61" /><circle className="joint-focus" cx="59" cy="61" r="7" /><circle className="joint-focus" cx="181" cy="61" r="7" /><path className="reach-guide" d="M39 61 H201" /><text className="angle-label" x="120" y="53">shoulder height</text></svg>;
+}
 
 function JointDiagram({ assessment, value }) {
   const diagram = DIAGRAMS[assessment];
@@ -106,17 +107,8 @@ function JointDiagram({ assessment, value }) {
         </div>
         <strong>{displayValue}</strong>
       </div>
-      <svg viewBox="0 0 190 160" role="img" aria-label={diagram.instruction}>
-        <path className="diagram-limb" d={diagram.path} />
-        {diagram.arc && <path className="diagram-arc" d={diagram.arc} />}
-        {assessment === "wrist" && <path className="diagram-guide" d="M25 55 H165" />}
-        {diagram.points.map(([label, x, y]) => (
-          <g key={label}>
-            <circle className="diagram-point" cx={x} cy={y} r="5" />
-            <text x={x} y={y - 11}>{label}</text>
-          </g>
-        ))}
-      </svg>
+      <span className="diagram-view">{diagram.view}</span>
+      <MotionIllustration assessment={assessment} />
       <p>{diagram.instruction}</p>
     </aside>
   );
