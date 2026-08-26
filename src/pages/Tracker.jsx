@@ -33,7 +33,7 @@ function Tracker() {
   const [reminderTime, setReminderTime] = useState("18:00");
   const [newExercise, setNewExercise] = useState("");
   const [expandedId, setExpandedId] = useState(null);
-  const [checkIn, setCheckIn] = useState({ pain: 0, difficulty: "Just right", note: "" });
+  const [checkIn, setCheckIn] = useState({ pain: 0, difficulty: "Just right", rangeOfMotion: "", note: "" });
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -168,7 +168,7 @@ function Tracker() {
         })}
         <div className="add-exercise"><input value={newExercise} onChange={(event) => setNewExercise(event.target.value)} onKeyDown={(event) => event.key === "Enter" && addTask()} placeholder="Add an exercise to today’s plan" /><button onClick={addTask}>Add exercise</button></div>
       </section>
-      <section className="check-in"><div><p className="eyebrow">AFTER YOUR SESSION</p><h2>How did that feel?</h2><p>Share a quick check-in so your plan can meet you where you are.</p></div><div className="checkin-controls"><label>Pain level <span>{checkIn.pain}/10</span><input type="range" min="0" max="10" value={checkIn.pain} onChange={(event) => setCheckIn({ ...checkIn, pain: Number(event.target.value) })} /></label><label>Difficulty<select value={checkIn.difficulty} onChange={(event) => setCheckIn({ ...checkIn, difficulty: event.target.value })}><option>Too easy</option><option>Just right</option><option>Too hard</option></select></label><textarea placeholder="Anything you noticed? (optional)" value={checkIn.note} onChange={(event) => setCheckIn({ ...checkIn, note: event.target.value })} /><button onClick={saveCheckIn}>Save check-in</button></div><p className={`guidance ${checkIn.pain >= 7 ? "urgent" : ""}`}>{guidance}</p></section>
+      <section className="check-in"><div><p className="eyebrow">AFTER YOUR SESSION</p><h2>How did that feel?</h2><p>Share a quick check-in so your plan can meet you where you are.</p></div><div className="checkin-controls"><label>Pain level <span>{checkIn.pain}/10</span><input type="range" min="0" max="10" value={checkIn.pain} onChange={(event) => setCheckIn({ ...checkIn, pain: Number(event.target.value) })} /></label><label>Difficulty<select value={checkIn.difficulty} onChange={(event) => setCheckIn({ ...checkIn, difficulty: event.target.value })}><option>Too easy</option><option>Just right</option><option>Too hard</option></select></label><label>Range of motion (optional)<input type="number" min="0" max="360" placeholder="e.g. 95°" value={checkIn.rangeOfMotion} onChange={(event) => setCheckIn({ ...checkIn, rangeOfMotion: event.target.value })} /></label><textarea placeholder="Anything you noticed? (optional)" value={checkIn.note} onChange={(event) => setCheckIn({ ...checkIn, note: event.target.value })} /><button onClick={saveCheckIn}>Save check-in</button></div><p className={`guidance ${checkIn.pain >= 7 ? "urgent" : ""}`}>{guidance}</p></section>
       {message && <div className="tracker-message" role="status">{message}</div>}
     </main>
   );
