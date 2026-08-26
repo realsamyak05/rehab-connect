@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, doc, onSnapshot } from "firebase/firestore";
+import { collection, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { FaArrowRight, FaChartLine, FaFire, FaRegCalendarCheck, FaRegSmile } from "react-icons/fa";
 import { auth, db } from "../firebase";
 import "./Dashboard.css";
@@ -38,7 +38,7 @@ function recoveryTimeline(history = [], checkIns = []) {
       return values.length ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length) : null;
     };
     return {
-      label: `Week ${index + 1}`,
+      label: ["3 weeks ago", "2 weeks ago", "Last week", "This week"][index],
       pain: average("pain"),
       rangeOfMotion: average("rangeOfMotion"),
       strength: average("strength"),
@@ -53,6 +53,7 @@ function Dashboard() {
   const [savedCentresCount, setSavedCentresCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [resettingTimeline, setResettingTimeline] = useState(false);
 
   useEffect(() => {
     let stopTracker = () => {};
@@ -92,6 +93,21 @@ function Dashboard() {
     ? "Tomorrow, keep it gentle: reduce reps and move within a comfortable range."
     : "Tomorrow’s plan is ready with the same steady, manageable routine.";
 
+  async function resetTimeline() {
+    if (!user || !window.confirm("Reset your recovery timeline? This clears completed-session history and symptom measurements, but keeps your daily exercise plan.")) return;
+    setResettingTimeline(true);
+    try {
+      await setDoc(doc(db, "users", user.uid, "tracker", "main"), {
+        history: [],
+        checkIns: [],
+      }, { merge: true });
+    } catch {
+      setLoadError("Could not reset your timeline. Please try again.");
+    } finally {
+      setResettingTimeline(false);
+    }
+  }
+
   if (loading) return <main className="dashboard-page">Loading your recovery dashboard...</main>;
   if (!user) return <main className="dashboard-page"><h1>Your recovery, one day at a time.</h1><p>Log in to see your daily plan, progress, and milestones.</p><Link className="dashboard-button" to="/login">Log in</Link></main>;
   if (loadError) return <main className="dashboard-page"><h1>Today’s Recovery</h1><p role="alert">{loadError}</p><Link className="dashboard-button" to="/tracker">Open tracker</Link></main>;
@@ -109,7 +125,7 @@ function Dashboard() {
         <article><div className="metric-icon sessions"><FaRegCalendarCheck /></div><p>Completed sessions</p><strong>{tracker.history.length}</strong><span>Days you completed your plan</span></article>
       </section>
       <section className="timeline-card">
-        <div className="timeline-heading"><div><p className="dashboard-kicker">YOUR RECOVERY TIMELINE</p><h2>Progress you can look back on.</h2><p>Each week uses your completed sessions and symptom check-ins.</p></div><Link to="/tracker">Log today’s progress <FaArrowRight /></Link></div>
+        <div className="timeline-heading"><div><p className="dashboard-kicker">YOUR RECOVERY TIMELINE</p><h2>Progress you can look back on.</h2><p>A rolling four-week view of completed sessions and symptom check-ins.</p></div><div className="timeline-actions"><Link to="/tracker">Log today’s progress <FaArrowRight /></Link><button onClick={resetTimeline} disabled={resettingTimeline}>{resettingTimeline ? "Resetting..." : "Reset timeline"}</button></div></div>
         <div className="timeline-scroll"><div className="timeline-grid">
           <div className="timeline-labels"><strong>Measure</strong><span>Pain</span><span>Range of motion</span><span>Strength</span><span>Adherence</span></div>
           {timeline.map((week) => <article key={week.label} className="timeline-week"><strong>{week.label}</strong><span>{week.pain === null ? "—" : week.pain + "/10"}</span><span>{week.rangeOfMotion === null ? "—" : week.rangeOfMotion + "°"}</span><span>{week.strength === null ? "—" : week.strength + "%"}</span><span className="adherence-value">{week.adherence}%</span></article>)}
